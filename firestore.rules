@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Funções auxiliares de autenticação e perfil
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function hasUserData() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'wagnertecnoia@gmail.com' ||
+        (hasUserData() && getUserData().role == 'superadmin')
+      );
+    }
+
+    function isSindica(condoId) {
+      return isAuthenticated() && (
+        hasUserData() &&
+        getUserData().role == 'sindica' && 
+        getUserData().condominioId == condoId
+      );
+    }
+
+    // Regras para a coleção de condomínios
+    match /condominios/{condoId} {
+      // Qualquer visitante com link de convite ou usuário autenticado pode consultar
+      allow read: if true;
+      // Super Admin ou usuários autenticados criam condomínios; Síndica e Super Admin atualizam/excluem
+      allow create: if isAuthenticated();
+      allow update, delete: if isSuperAdmin() || isSindica(condoId);
+
+      // Subcoleção de Unidades
+      match /unidades/{unidadeId} {
+        allow read: if true;
+        allow write: if isSuperAdmin() || isSindica(condoId);
+      }
+    }
+
+    // Regras para a coleção de usuários
+    match /users/{userId} {
+      // O próprio usuário, Super Admin, ou síndica do condomínio pode ler
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isSuperAdmin() || 
+        (hasUserData() && getUserData().role == 'sindica' && getUserData().condominioId == resource.data.condominioId)
+      );
+      
+      // Auto-cadastro ao criar conta ou cadastro direto por Super Admin
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+      
+      // Atualização de perfil, aprovação ou sincronização
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isSuperAdmin() || 
+        (hasUserData() && getUserData().role == 'sindica' && getUserData().condominioId == resource.data.condominioId)
+      );
+    }
+
+    // Regras para a coleção de ocorrências
+    match /ocorrencias/{ocorrenciaId} {
+      // Leitura permitida para superadmin, síndica ou morador da mesma unidade
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (hasUserData() && getUserData().condominioId == resource.data.condominioId && (
+          getUserData().role in ['sindica', 'zelador', 'portaria'] ||
+          resource.data.unidadeId == getUserData().unidadeId
+        ))
+      );
+      
+      // Criação permitida para superadmin, síndica ou moradores ativos
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (hasUserData() && getUserData().condominioId == request.resource.data.condominioId && getUserData().role in ['sindica', 'morador'])
+      );
+
+      // Atualização de status permitida para síndica, zelador e superadmin
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (hasUserData() && getUserData().condominioId == resource.data.condominioId && getUserData().role in ['sindica', 'zelador'])
+      );
+      
+      allow delete: if isSuperAdmin() || (isAuthenticated() && hasUserData() && getUserData().role == 'sindica');
+    }
+  }
+}
