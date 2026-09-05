@@ -9,7 +9,7 @@ Este documento define as regras de negócio para o sistema do Condomínio (Livro
 - **Zelador / Portaria**: Podem visualizar todas as ocorrências (para atuar nelas) e alterar o status. Podem visualizar o Mural de Avisos (e dependendo da configuração, postar).
 
 ## 3. Ocorrências e Motor de IA
-- Quando um morador registrar uma ocorrência (ex: "Vazamento no teto", "Lâmpada queimada"), o sistema enviará o texto para uma IA (Google Gemini).
+- Quando um morador registrar uma ocorrência (ex: "Vazamento no teto", "Lâmpada queimada"), o sistema enviará o texto para uma IA (Groq Cloud API).
 - A IA classificará o grau de urgência da ocorrência (ex: Baixa, Média, Alta, Crítica).
 - A ocorrência será salva no Firestore contendo os dados do morador, a descrição, e o grau de urgência definido pela IA.
 - Apenas a Síndica e sua equipe verão o grau de urgência no painel administrativo para priorizar o atendimento.
