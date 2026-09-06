@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthView from '@/views/AuthView';
 import RegisterView from '@/views/RegisterView';
 import DashboardView from '@/views/DashboardView';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+const PrivateRoute = ({ children }: { children: ReactNode }) => {
   const { currentUser, loading } = useAuth();
   
   if (loading) return <div>Carregando...</div>;

@@ -3,6 +3,13 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+- [feat] triagem inteligente por IA em chamados e seletor visual de unidades — Refs: RN-003, spec §3
+  - Remove campos manuais de categoria e urgência no formulário de ocorrência do morador (MoradorView)
+  - Implementa módulo ai-triagem.ts com integração à API Groq (llama-3.1-8b-instant) e fallback heurístico determinístico
+  - Persiste categoria, urgência, justificativa e flag triagemPorIA no documento do Firestore
+  - Exibe justificativa e badges de prioridade (Alta, Média, Baixa) no painel de ocorrências da síndica (SindicaView)
+  - Adiciona componente UnitSelector com busca em tempo real, agrupamento por andar e chips de bloco
+  - Adiciona suítes de testes unitários para ai-triagem e unit-helpers com 100% de aprovação (32 testes totais)
 - [feat] isolamento de dashboards por perfil, criacao direta de sindica e correcao de permissoes firestore — Refs: spec §2, RN-001
   - Adiciona visões dedicadas e isoladas: SuperAdminView, SindicaView e MoradorView
   - Adiciona suporte no SuperAdminView para criação direta de contas de síndica com senha inicial

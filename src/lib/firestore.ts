@@ -204,6 +204,14 @@ export const createUnidadesEmLote = async (condominioId: string, unidades: any[]
   await Promise.all(promessas);
 };
 
+export const createUnidade = async (condominioId: string, unidade: { torre?: string; andar?: number; numero: string }) => {
+  const docRef = await addDoc(collection(db, `condominios/${condominioId}/unidades`), {
+    ...unidade,
+    createdAt: new Date(),
+  });
+  return { id: docRef.id, ...unidade };
+};
+
 // ============================================================================
 // Coleção: ocorrencias
 // ============================================================================

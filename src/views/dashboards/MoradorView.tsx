@@ -12,18 +12,19 @@ import {
   PlusCircle,
   Clock,
   CheckCircle2,
-  AlertTriangle,
   LogOut,
   X,
   Send,
   Loader2,
   Home,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { getOcorrencias, createOcorrencia, getCondominio } from '@/lib/firestore';
+import { classificarOcorrenciaComIA } from '@/lib/ai-triagem';
 
 export default function MoradorView() {
   const { appUser } = useAuth();
@@ -31,11 +32,9 @@ export default function MoradorView() {
   const [ocorrencias, setOcorrencias] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Formulário Nova Ocorrência
+  // Formulário Nova Ocorrência (sem categoria nem gravidade manuais)
   const [modalOpen, setModalOpen] = useState(false);
   const [titulo, setTitulo] = useState('');
-  const [categoria, setCategoria] = useState('Manutenção');
-  const [urgencia, setUrgencia] = useState<'Baixa' | 'Média' | 'Alta'>('Média');
   const [descricao, setDescricao] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorForm, setErrorForm] = useState('');
@@ -94,11 +93,16 @@ export default function MoradorView() {
     setSubmitting(true);
 
     try {
+      // Motor de IA classifica categoria e gravidade automaticamente
+      const triagem = await classificarOcorrenciaComIA(titulo.trim(), descricao.trim());
+
       await createOcorrencia({
         titulo: titulo.trim(),
-        categoria,
-        urgencia,
         descricao: descricao.trim(),
+        categoria: triagem.categoria,
+        urgencia: triagem.urgencia,
+        iaJustificativa: triagem.justificativa,
+        triagemPorIA: triagem.triagemPorIA,
         condominioId: appUser?.condominioId,
         unidadeId: appUser?.unidadeId || '',
         unidadeNome: appUser?.unidadeNome || 'Minha Unidade',
@@ -109,7 +113,6 @@ export default function MoradorView() {
 
       setTitulo('');
       setDescricao('');
-      setUrgencia('Média');
       setModalOpen(false);
       await loadData();
     } catch (err) {
@@ -181,7 +184,7 @@ export default function MoradorView() {
               <div>
                 <CardTitle className="text-lg text-indigo-950">Registrar Chamado / Ocorrência</CardTitle>
                 <CardDescription>
-                  Informe a administração sobre reparos, barulho ou solicitações na sua unidade.
+                  Informe a administração sobre reparos, barulho ou solicitações da sua unidade.
                 </CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setModalOpen(false)}>
@@ -196,62 +199,39 @@ export default function MoradorView() {
                   </p>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="titulo">Título da Solicitação *</Label>
-                    <Input
-                      id="titulo"
-                      placeholder="Ex: Lâmpada do corredor queimada"
-                      value={titulo}
-                      onChange={(e) => setTitulo(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="categoria">Categoria</Label>
-                      <select
-                        id="categoria"
-                        className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm"
-                        value={categoria}
-                        onChange={(e) => setCategoria(e.target.value)}
-                      >
-                        <option value="Manutenção">Manutenção</option>
-                        <option value="Barulho">Barulho</option>
-                        <option value="Segurança">Segurança</option>
-                        <option value="Limpeza">Limpeza</option>
-                        <option value="Outro">Outro</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="urgencia">Gravidade</Label>
-                      <select
-                        id="urgencia"
-                        className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm"
-                        value={urgencia}
-                        onChange={(e) => setUrgencia(e.target.value as any)}
-                      >
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média">Média</option>
-                        <option value="Alta">Alta</option>
-                      </select>
-                    </div>
-                  </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="titulo">Título da Solicitação *</Label>
+                  <Input
+                    id="titulo"
+                    placeholder="Ex: Vazamento de água na pia ou Lâmpada queimada"
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="descricao">Descrição dos Fatos *</Label>
                   <textarea
                     id="descricao"
-                    rows={3}
+                    rows={4}
                     className="w-full p-3 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Descreva detalhadamente o ocorrido..."
+                    placeholder="Descreva com detalhes o que está acontecendo para a administração atuar..."
                     value={descricao}
                     onChange={(e) => setDescricao(e.target.value)}
                     required
                   />
+                </div>
+
+                {/* Nota da Triagem por IA */}
+                <div className="p-3 bg-indigo-50/70 rounded-xl border border-indigo-100 flex items-start gap-2.5 text-xs text-indigo-900">
+                  <Sparkles className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Triagem e Priorização Inteligente</p>
+                    <p className="text-indigo-700 mt-0.5 leading-relaxed">
+                      A inteligência artificial analisa o seu relato para definir automaticamente a categoria e o nível de gravidade para a equipe da síndica.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
@@ -260,9 +240,9 @@ export default function MoradorView() {
                   </Button>
                   <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                     {submitting ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enviando...</>
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analisando com IA e enviando...</>
                     ) : (
-                      <><Send className="mr-2 h-4 w-4" /> Enviar Ocorrência</>
+                      <><Send className="mr-2 h-4 w-4" /> Enviar Chamado</>
                     )}
                   </Button>
                 </div>
@@ -291,7 +271,7 @@ export default function MoradorView() {
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Histórico de Ocorrências da Unidade</CardTitle>
                   <CardDescription>
-                    Acompanhe em tempo real a resolução dos seus chamados pela administração.
+                    Acompanhe em tempo real o status dos seus chamados pela administração predial.
                   </CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" onClick={loadData} disabled={loading}>
@@ -313,9 +293,7 @@ export default function MoradorView() {
                   <Table>
                     <TableHeader className="bg-slate-50">
                       <TableRow>
-                        <TableHead>Título</TableHead>
-                        <TableHead>Categoria</TableHead>
-                        <TableHead>Gravidade</TableHead>
+                        <TableHead>Assunto / Relato</TableHead>
                         <TableHead className="text-right">Status do Chamado</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -323,34 +301,14 @@ export default function MoradorView() {
                       {ocorrencias.map((oc) => (
                         <TableRow key={oc.id} className="hover:bg-slate-50/60">
                           <TableCell className="font-medium text-slate-800">
-                            <div>{oc.titulo}</div>
+                            <div className="font-semibold text-slate-900">{oc.titulo}</div>
                             {oc.descricao && (
-                              <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">{oc.descricao}</div>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-slate-600 text-xs">
-                            <Badge variant="outline" className="font-normal">{oc.categoria || 'Geral'}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {oc.urgencia === 'Alta' && (
-                              <Badge variant="destructive" className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200">
-                                <AlertTriangle className="mr-1 h-3 w-3" /> Alta
-                              </Badge>
-                            )}
-                            {oc.urgencia === 'Média' && (
-                              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200">
-                                Média
-                              </Badge>
-                            )}
-                            {oc.urgencia === 'Baixa' && (
-                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200">
-                                Baixa
-                              </Badge>
+                              <div className="text-xs text-slate-500 mt-1 line-clamp-2">{oc.descricao}</div>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
                             {oc.status === 'Pendente' && (
-                              <Badge variant="outline" className="text-slate-600 border-slate-300">
+                              <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
                                 <Clock className="mr-1 h-3 w-3" /> Aguardando Análise
                               </Badge>
                             )}

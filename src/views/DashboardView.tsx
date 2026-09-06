@@ -19,9 +19,9 @@ export default function DashboardView() {
   // 1. Estado de carregamento do perfil
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-slate-300 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-        <p className="text-sm font-medium">Carregando seu ambiente seguro...</p>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600 gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <p className="text-sm font-medium">Carregando perfil...</p>
       </div>
     );
   }
