@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 // ============================================================================
@@ -196,6 +196,13 @@ export const getUnidades = async (condominioId: string) => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
 };
 
+export const getUnidade = async (condominioId: string, unidadeId: string) => {
+  const ref = doc(db, `condominios/${condominioId}/unidades`, unidadeId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as any) };
+};
+
 export const createUnidadesEmLote = async (condominioId: string, unidades: any[]) => {
   // Para MVP simplificado sem batch (pode ser aprimorado depois para writeBatch)
   const promessas = unidades.map(u =>
@@ -210,6 +217,39 @@ export const createUnidade = async (condominioId: string, unidade: { torre?: str
     createdAt: new Date(),
   });
   return { id: docRef.id, ...unidade };
+};
+
+export const updateUnidade = async (
+  condominioId: string,
+  unidadeId: string,
+  dados: { torre?: string; andar?: number; numero: string }
+) => {
+  const ref = doc(db, `condominios/${condominioId}/unidades`, unidadeId);
+  await updateDoc(ref, {
+    ...dados,
+    updatedAt: new Date(),
+  });
+  return { id: unidadeId, ...dados };
+};
+
+export const deleteUnidade = async (condominioId: string, unidadeId: string) => {
+  const ref = doc(db, `condominios/${condominioId}/unidades`, unidadeId);
+  await deleteDoc(ref);
+  return unidadeId;
+};
+
+export const resetUnidades = async (condominioId: string, novasUnidades: any[]) => {
+  const snapshot = await getDocs(collection(db, `condominios/${condominioId}/unidades`));
+  const promessasDelete = snapshot.docs.map((d) => deleteDoc(d.ref));
+  await Promise.all(promessasDelete);
+
+  const promessasAdd = novasUnidades.map((u) =>
+    addDoc(collection(db, `condominios/${condominioId}/unidades`), {
+      ...u,
+      createdAt: new Date(),
+    })
+  );
+  await Promise.all(promessasAdd);
 };
 
 // ============================================================================
@@ -233,16 +273,69 @@ export const getOcorrencias = async (condominioId: string, role: string, unidade
 };
 
 export const createOcorrencia = async (data: any) => {
+  const agora = new Date().toISOString();
+  const primeiroHistorico = {
+    id: `hist_${Date.now()}_init`,
+    data: agora,
+    autorNome: data.autorNome || 'Morador',
+    autorPapel: 'Morador',
+    mensagem: 'Chamado aberto pelo morador.',
+    statusNovo: data.status || 'Pendente',
+    responsavelNovo: data.responsavelAtual || 'Síndica',
+    tipo: 'abertura',
+  };
+
   const docRef = await addDoc(collection(db, "ocorrencias"), {
     ...data,
-    createdAt: new Date()
+    status: data.status || 'Pendente',
+    responsavelAtual: data.responsavelAtual || 'Síndica',
+    historico: data.historico && data.historico.length > 0 ? data.historico : [primeiroHistorico],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
   return docRef.id;
 };
 
 export const updateOcorrenciaStatus = async (id: string, status: string) => {
   const ref = doc(db, "ocorrencias", id);
-  await updateDoc(ref, { status });
+  await updateDoc(ref, { status, updatedAt: new Date() });
+};
+
+export const despacharOcorrencia = async (
+  ocorrenciaId: string,
+  params: {
+    relato: string;
+    responsavelNovo: string;
+    statusNovo: string;
+    autorNome: string;
+    autorPapel: string;
+    tipo?: 'despacho' | 'conclusao_equipe' | 'encerramento' | 'reabertura';
+  }
+) => {
+  const ref = doc(db, "ocorrencias", ocorrenciaId);
+  const snap = await getDoc(ref);
+  const atual = snap.exists() ? snap.data() : {};
+  const historicoAntigo = Array.isArray(atual.historico) ? atual.historico : [];
+
+  const novoItem = {
+    id: `hist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    data: new Date().toISOString(),
+    autorNome: params.autorNome || 'Equipe',
+    autorPapel: params.autorPapel || 'Síndica',
+    mensagem: (params.relato || '').trim(),
+    responsavelNovo: params.responsavelNovo,
+    statusNovo: params.statusNovo,
+    tipo: params.tipo || 'despacho',
+  };
+
+  await updateDoc(ref, {
+    status: params.statusNovo,
+    responsavelAtual: params.responsavelNovo,
+    historico: [...historicoAntigo, novoItem],
+    updatedAt: new Date(),
+  });
+
+  return novoItem;
 };
 
 // ============================================================================
@@ -284,4 +377,65 @@ export const getUser = async (uid: string) => {
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...(snap.data() as any) };
+};
+
+// ============================================================================
+// Coleção: avisos (Mural de Comunicados)
+// ============================================================================
+
+export type AvisoData = {
+  id?: string;
+  condominioId: string;
+  titulo: string;
+  mensagem: string;
+  categoria?: 'Geral' | 'Manutenção' | 'Assembleia' | 'Segurança' | 'Convivência';
+  destinatarioTipo: 'todos' | 'bloco';
+  blocoDestino?: string;
+  criadoPorNome: string;
+  criadoPorUid: string;
+  createdAt?: any;
+};
+
+export const getAvisos = async (condominioId: string, moradorBloco?: string): Promise<AvisoData[]> => {
+  const q = query(
+    collection(db, "avisos"),
+    where("condominioId", "==", condominioId)
+  );
+  const snapshot = await getDocs(q);
+  const list = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...(doc.data() as any)
+  })) as AvisoData[];
+
+  // Ordenação decrescente por data de criação
+  list.sort((a, b) => {
+    const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+    const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+    return timeB - timeA;
+  });
+
+  // Se moradorBloco for informado, filtra comunicados globais ('todos') ou para o respectivo bloco
+  if (moradorBloco) {
+    const blocoNorm = moradorBloco.trim().toLowerCase();
+    return list.filter(av => {
+      if (av.destinatarioTipo === 'todos' || !av.blocoDestino) return true;
+      return av.blocoDestino.trim().toLowerCase() === blocoNorm;
+    });
+  }
+
+  return list;
+};
+
+export const createAviso = async (dados: Omit<AvisoData, 'id'>) => {
+  const docRef = await addDoc(collection(db, "avisos"), {
+    ...dados,
+    createdAt: new Date(),
+  });
+  return { id: docRef.id, ...dados };
+};
+
+export const deleteAviso = async (avisoId: string) => {
+  const ref = doc(db, "avisos", avisoId);
+  await deleteDoc(ref);
+  return avisoId;
 };

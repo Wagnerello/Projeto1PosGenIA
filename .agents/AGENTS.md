@@ -70,3 +70,25 @@
    - **Termos banidos**: "robusto", "ecossistema inovador", "revolucionário", "divisor de águas", "virada de chave", "fomentar", "desvendar", "mergulhar fundo", "empoderar", "alavancar", "leverage", "delve", "streamline", "cutting-edge".
    - **Exceção explícita**: `docs/CHANGELOG_TECH.md` é um artefato técnico interno, não literário. Suas entradas devem ser objetivas e telegráficas.
 </RULE[human_copywriting_and_anti_slop_policy]>
+
+<RULE[firestore_rules_auto_deploy]>
+1. **DEPLOY IMEDIATO DE REGRAS DO FIRESTORE**:
+   - Sempre que o arquivo `firestore.rules` for criado ou editado, a IA DEVE obrigatoriamente e imediatamente executar o deploy das regras em produção com `npx firebase deploy --only firestore:rules`.
+   - Nenhuma tarefa que altere regras de segurança do Firestore pode ser dada como concluída sem a confirmação de que o deploy das regras foi finalizado com sucesso.
+</RULE[firestore_rules_auto_deploy]>
+
+<RULE[always_active_skills_adhd_no_slop_impeccable]>
+1. **INTEGRAÇÃO MANDATÓRIA PERMANENTE DAS SKILLS**:
+   - Em toda interação, comando e resposta, a IA DEVE seguir estritamente as diretrizes combinadas de:
+     a) **/i-have-adhd**:
+        - Começar direto pela próxima ação ou pelo resultado concreto (sem preâmbulos, sem "Claro!", sem "Vamos fazer isso").
+        - Listas numeradas curtas e delimitadas (máximo 5 passos).
+        - Eliminar rodeios e encerramentos vagos ("espero ter ajudado", "se precisar de algo avise").
+        - Expor estado atual e ações imediatas de forma nítida.
+     b) **/no-ai-slop**:
+        - Texto humano, seco, factual, sem inflação de importância, sem falso entusiasmo.
+        - Usar verbos diretos, métricas concretas e eliminar adjetivos vazios.
+     c) **/impeccable**:
+        - UI/UX profissional, hierarquia visual nítida, tipografia limpa, contraste adequado, estados vazios acolhedores e interfaces completas sem atalhos.
+</RULE[always_active_skills_adhd_no_slop_impeccable]>
+

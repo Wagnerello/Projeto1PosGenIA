@@ -18,19 +18,27 @@ import {
   Loader2,
   Home,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Building2,
+  Users
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
-import { getOcorrencias, createOcorrencia, getCondominio } from '@/lib/firestore';
+import { getOcorrencias, createOcorrencia, getCondominio, getAvisos, getUnidade, type AvisoData } from '@/lib/firestore';
 import { classificarOcorrenciaComIA } from '@/lib/ai-triagem';
+import { getStatusConfig, getResponsavelConfig } from '@/lib/ocorrencia-helpers';
+import { getCategoriaAvisoConfig } from '@/lib/aviso-helpers';
+import { OcorrenciaTimelineModal } from '@/components/common/OcorrenciaTimelineModal';
 
 export default function MoradorView() {
   const { appUser } = useAuth();
   const [condoNome, setCondoNome] = useState('');
   const [ocorrencias, setOcorrencias] = useState<any[]>([]);
+  const [avisos, setAvisos] = useState<AvisoData[]>([]);
+  const [blocoMorador, setBlocoMorador] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedOcorrencia, setSelectedOcorrencia] = useState<any | null>(null);
 
   // Formulário Nova Ocorrência (sem categoria nem gravidade manuais)
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,21 +46,6 @@ export default function MoradorView() {
   const [descricao, setDescricao] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorForm, setErrorForm] = useState('');
-
-  const avisos = [
-    {
-      id: '1',
-      titulo: 'Manutenção Preventiva do Elevador Social',
-      data: 'Hoje, 09:00',
-      mensagem: 'O elevador social passará por revisão das 10h às 14h. Por favor, utilize o elevador de serviço ou as escadas durante o período.'
-    },
-    {
-      id: '2',
-      titulo: 'Coleta Seletiva e Descarte Consciente',
-      data: 'Ontem',
-      mensagem: 'Lembramos a todos os moradores que o lixo reciclável deve ser depositado devidamente separado nas lixeiras identificadas no subsolo.'
-    }
-  ];
 
   useEffect(() => {
     if (appUser?.condominioId) {
@@ -66,12 +59,38 @@ export default function MoradorView() {
     if (!appUser?.condominioId) return;
     setLoading(true);
     try {
-      const [c, oc] = await Promise.all([
+      // 1. Identifica o bloco da unidade do morador
+      let moradorBloco: string | null = null;
+      if (appUser.unidadeId) {
+        try {
+          const un = await getUnidade(appUser.condominioId, appUser.unidadeId);
+          if (un?.torre) {
+            moradorBloco = un.torre;
+          }
+        } catch (errUnidade) {
+          console.warn('Não foi possível carregar detalhes da unidade:', errUnidade);
+        }
+      }
+
+      // Fallback: tentar extrair bloco a partir do nome da unidade (ex: "Bloco A - Apto 101")
+      if (!moradorBloco && appUser.unidadeNome) {
+        const parts = appUser.unidadeNome.split(/[-–—/]/);
+        if (parts.length > 1 && parts[0].trim()) {
+          moradorBloco = parts[0].trim();
+        }
+      }
+      setBlocoMorador(moradorBloco);
+
+      // 2. Carrega condomínio, ocorrências e comunicados do mural
+      const [c, oc, avList] = await Promise.all([
         getCondominio(appUser.condominioId),
         getOcorrencias(appUser.condominioId, 'morador', appUser.unidadeId),
+        getAvisos(appUser.condominioId, moradorBloco || undefined),
       ]);
+
       if (c) setCondoNome((c as any).nome || 'Meu Condomínio');
       setOcorrencias(oc);
+      setAvisos(avList);
     } catch (e) {
       console.error('Erro ao carregar dados do morador:', e);
     } finally {
@@ -260,7 +279,7 @@ export default function MoradorView() {
             </TabsTrigger>
             <TabsTrigger value="avisos" className="data-[state=active]:bg-white data-[state=active]:text-indigo-700">
               <Megaphone className="mr-1.5 h-4 w-4" />
-              Mural de Avisos
+              Mural ({avisos.length})
             </TabsTrigger>
           </TabsList>
 
@@ -294,37 +313,46 @@ export default function MoradorView() {
                     <TableHeader className="bg-slate-50">
                       <TableRow>
                         <TableHead>Assunto / Relato</TableHead>
-                        <TableHead className="text-right">Status do Chamado</TableHead>
+                        <TableHead>Responsável & Status</TableHead>
+                        <TableHead className="text-right">Ação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {ocorrencias.map((oc) => (
-                        <TableRow key={oc.id} className="hover:bg-slate-50/60">
-                          <TableCell className="font-medium text-slate-800">
-                            <div className="font-semibold text-slate-900">{oc.titulo}</div>
-                            {oc.descricao && (
-                              <div className="text-xs text-slate-500 mt-1 line-clamp-2">{oc.descricao}</div>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {oc.status === 'Pendente' && (
-                              <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
-                                <Clock className="mr-1 h-3 w-3" /> Aguardando Análise
-                              </Badge>
-                            )}
-                            {oc.status === 'Em Análise' && (
-                              <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200">
-                                <Clock className="mr-1 h-3 w-3" /> Em Andamento
-                              </Badge>
-                            )}
-                            {oc.status === 'Resolvido' && (
-                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200">
-                                <CheckCircle2 className="mr-1 h-3 w-3" /> Resolvido
-                              </Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {ocorrencias.map((oc) => {
+                        const stCfg = getStatusConfig(oc.status);
+                        const rsCfg = getResponsavelConfig(oc.responsavelAtual);
+                        return (
+                          <TableRow key={oc.id} className="hover:bg-slate-50/60">
+                            <TableCell className="font-medium text-slate-800">
+                              <div className="font-semibold text-slate-900">{oc.titulo}</div>
+                              {oc.descricao && (
+                                <div className="text-xs text-slate-500 mt-1 line-clamp-2">{oc.descricao}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium border inline-flex items-center gap-1 ${stCfg.bgClass} ${stCfg.textClass} ${stCfg.borderClass}`}>
+                                  {stCfg.label}
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Com: <strong className="text-slate-700">{rsCfg.label}</strong>
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedOcorrencia(oc)}
+                                className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 font-medium"
+                              >
+                                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                                Ver Trilha
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 )}
@@ -334,21 +362,140 @@ export default function MoradorView() {
 
           {/* Tab 2: Mural de Avisos */}
           <TabsContent value="avisos" className="mt-4 space-y-4">
-            {avisos.map((av) => (
-              <Card key={av.id} className="border-l-4 border-l-indigo-600 shadow-sm rounded-xl">
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-base font-bold text-slate-800">{av.titulo}</CardTitle>
-                    <span className="text-xs text-slate-400 font-medium">{av.data}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-slate-600 leading-relaxed">{av.mensagem}</p>
-                </CardContent>
+            {/* Barra informativa com identificação de bloco */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <Megaphone className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 text-sm">
+                    Mural de Comunicados do Condomínio
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {blocoMorador ? (
+                      <>Exibindo comunicados gerais e avisos direcionados para o <strong>{blocoMorador}</strong>.</>
+                    ) : (
+                      <>Exibindo comunicados oficiais emitidos pela administração do condomínio.</>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadData}
+                disabled={loading}
+                className="text-xs border-slate-200 self-start sm:self-auto"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+                Atualizar Mural
+              </Button>
+            </div>
+
+            {loading ? (
+              <Card className="border-0 shadow-sm p-10 text-center text-slate-400">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-600" />
+                Carregando comunicados do condomínio...
               </Card>
-            ))}
+            ) : avisos.length === 0 ? (
+              <Card className="border-0 shadow-sm p-12 text-center text-slate-400 space-y-3 bg-white rounded-xl">
+                <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto" />
+                <p className="font-semibold text-slate-700">Nenhum comunicado no momento</p>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  A administração do condomínio não publicou novos avisos para o seu bloco ou comunicados gerais recentemente.
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-3.5">
+                {avisos.map((av) => {
+                  const catCfg = getCategoriaAvisoConfig(av.categoria);
+                  let dataFormatada = 'Data recente';
+                  if (av.createdAt?.toDate) {
+                    dataFormatada = av.createdAt.toDate().toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                  } else if (av.createdAt) {
+                    try {
+                      dataFormatada = new Date(av.createdAt).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    } catch {
+                      dataFormatada = 'Data recente';
+                    }
+                  }
+
+                  const isBloco = av.destinatarioTipo === 'bloco';
+
+                  return (
+                    <Card
+                      key={av.id}
+                      className={`shadow-sm rounded-xl transition-all border-y border-r ${
+                        isBloco
+                          ? 'border-l-4 border-l-purple-600 border-purple-100 bg-gradient-to-r from-purple-50/20 to-white'
+                          : 'border-l-4 border-l-indigo-600 border-slate-200 bg-white'
+                      }`}
+                    >
+                      <CardHeader className="pb-2 pt-4 px-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${catCfg.badgeClass}`}>
+                              {catCfg.label}
+                            </span>
+                            {isBloco ? (
+                              <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-[11px] font-medium flex items-center gap-1">
+                                <Building2 className="h-3 w-3" />
+                                Aviso para seu {av.blocoDestino || 'Bloco'}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200 text-[11px] font-medium flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                Comunicado Geral
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-slate-400 font-medium">
+                            {dataFormatada}
+                          </span>
+                        </div>
+                        <CardTitle className="text-base font-bold text-slate-900 mt-2">
+                          {av.titulo}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="px-5 pb-4 pt-1">
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                          {av.mensagem}
+                        </p>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-3 border-t border-slate-100">
+                          <span>Publicado por: <strong className="text-slate-600 font-medium">{av.criadoPorNome}</strong></span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
+
+        {/* Modal: Linha do Tempo Transparente do Atendimento (Modo Leitura para Morador) */}
+        {selectedOcorrencia && (
+          <OcorrenciaTimelineModal
+            isOpen={Boolean(selectedOcorrencia)}
+            ocorrencia={selectedOcorrencia}
+            userRole="morador"
+            userName={appUser?.nome || 'Morador'}
+            onClose={() => setSelectedOcorrencia(null)}
+          />
+        )}
       </main>
     </div>
   );

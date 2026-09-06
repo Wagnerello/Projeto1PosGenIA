@@ -3,6 +3,13 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+- [feat] gestao completa de unidades, mural de comunicados segmentado e linha do tempo — Refs: RN-001, RN-003, spec §3
+  - Adiciona gestão de unidades prediais pela síndica (criação, edição, exclusão segura e regerar grade)
+  - Implementa Mural de Comunicados segmentado com opção geral (todos) ou por bloco específico para Síndica e Morador
+  - Adiciona regras no Firestore para coleção avisos com deploy automatizado
+  - Implementa componente modal OcorrenciaTimelineModal com trilha cronológica do atendimento
+  - Adiciona suítes de testes unitários para unit-helpers, aviso-helpers e ocorrencia-helpers (61 testes passando)
+  - Atualiza governança em .agents/AGENTS.md com deploy obrigatório de regras e incorporação permanente de skills
 - [feat] triagem inteligente por IA em chamados e seletor visual de unidades — Refs: RN-003, spec §3
   - Remove campos manuais de categoria e urgência no formulário de ocorrência do morador (MoradorView)
   - Implementa módulo ai-triagem.ts com integração à API Groq (llama-3.1-8b-instant) e fallback heurístico determinístico

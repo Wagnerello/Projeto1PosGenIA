@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatUnitName, filterUnits, groupUnitsByFloor, type UnitData } from './unit-helpers';
+import { formatUnitName, filterUnits, groupUnitsByFloor, isUnitDuplicate, countUnitsByTower, type UnitData } from './unit-helpers';
 
 describe('formatUnitName', () => {
   it('deve formatar unidade completa com torre, andar e número', () => {
@@ -106,3 +106,55 @@ describe('groupUnitsByFloor', () => {
     expect(groupUnitsByFloor(undefined as any)).toEqual([]);
   });
 });
+
+describe('isUnitDuplicate', () => {
+  const units: UnitData[] = [
+    { id: 'u1', torre: 'Bloco A', numero: '101' },
+    { id: 'u2', torre: 'Bloco A', numero: '102' },
+    { id: 'u3', torre: 'Bloco B', numero: '101' },
+  ];
+
+  it('deve identificar duplicata na mesma torre com mesmo número', () => {
+    expect(isUnitDuplicate(units, { torre: 'Bloco A', numero: '101' })).toBe(true);
+    expect(isUnitDuplicate(units, { torre: 'bloco a', numero: ' 101 ' })).toBe(true);
+  });
+
+  it('não deve considerar duplicata se a torre for diferente', () => {
+    expect(isUnitDuplicate(units, { torre: 'Bloco C', numero: '101' })).toBe(false);
+  });
+
+  it('não deve considerar duplicata se o número for diferente', () => {
+    expect(isUnitDuplicate(units, { torre: 'Bloco A', numero: '103' })).toBe(false);
+  });
+
+  it('deve ignorar o próprio ID ao editar uma unidade', () => {
+    expect(isUnitDuplicate(units, { torre: 'Bloco A', numero: '101' }, 'u1')).toBe(false);
+    expect(isUnitDuplicate(units, { torre: 'Bloco A', numero: '102' }, 'u1')).toBe(true);
+  });
+
+  it('deve retornar false para entradas inválidas ou vazias', () => {
+    expect(isUnitDuplicate([], { numero: '101' })).toBe(false);
+    expect(isUnitDuplicate(units, { numero: '' })).toBe(false);
+  });
+});
+
+describe('countUnitsByTower', () => {
+  it('deve contar corretamente as unidades por torre', () => {
+    const units: UnitData[] = [
+      { id: '1', torre: 'Bloco A', numero: '101' },
+      { id: '2', torre: 'Bloco A', numero: '102' },
+      { id: '3', torre: 'Bloco B', numero: '101' },
+      { id: '4', numero: 'Casa 1' },
+    ];
+    const counts = countUnitsByTower(units);
+    expect(counts['Bloco A']).toBe(2);
+    expect(counts['Bloco B']).toBe(1);
+    expect(counts['Geral']).toBe(1);
+  });
+
+  it('deve retornar objeto vazio se a lista for vazia', () => {
+    expect(countUnitsByTower([])).toEqual({});
+    expect(countUnitsByTower(undefined as any)).toEqual({});
+  });
+});
+

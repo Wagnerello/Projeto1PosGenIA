@@ -79,3 +79,39 @@ export function groupUnitsByFloor(units: UnitData[]): { andar: string; itens: Un
     ),
   }));
 }
+
+/**
+ * Verifica se já existe uma unidade com a mesma combinação de torre e número.
+ * Permite passar excludeId para cenários de edição da própria unidade.
+ */
+export function isUnitDuplicate(
+  units: UnitData[],
+  newUnit: { torre?: string; numero: string },
+  excludeId?: string
+): boolean {
+  if (!Array.isArray(units) || !newUnit || !newUnit.numero) return false;
+
+  const targetNumero = newUnit.numero.trim().toLowerCase();
+  const targetTorre = (newUnit.torre || '').trim().toLowerCase();
+
+  return units.some((u) => {
+    if (excludeId && u.id === excludeId) return false;
+    const uNumero = (u.numero || '').trim().toLowerCase();
+    const uTorre = (u.torre || '').trim().toLowerCase();
+    return uNumero === targetNumero && uTorre === targetTorre;
+  });
+}
+
+/**
+ * Retorna a contagem de unidades agrupadas por torre/bloco.
+ */
+export function countUnitsByTower(units: UnitData[]): Record<string, number> {
+  if (!Array.isArray(units)) return {};
+  const counts: Record<string, number> = {};
+  units.forEach((u) => {
+    const torre = (u.torre || 'Geral').trim();
+    counts[torre] = (counts[torre] || 0) + 1;
+  });
+  return counts;
+}
+

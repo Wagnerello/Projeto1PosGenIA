@@ -90,5 +90,26 @@ service cloud.firestore {
       
       allow delete: if isSuperAdmin() || (isAuthenticated() && hasUserData() && getUserData().role == 'sindica');
     }
+
+    // Regras para a coleção de avisos/mural
+    match /avisos/{avisoId} {
+      // Leitura permitida para superadmin ou usuários autenticados do condomínio
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (hasUserData() && getUserData().condominioId == resource.data.condominioId)
+      );
+
+      // Criação exclusiva para síndica do condomínio ou superadmin
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (hasUserData() && getUserData().condominioId == request.resource.data.condominioId && getUserData().role == 'sindica')
+      );
+
+      // Edição e exclusão exclusivas para síndica do condomínio ou superadmin
+      allow update, delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (hasUserData() && getUserData().condominioId == resource.data.condominioId && getUserData().role == 'sindica')
+      );
+    }
   }
 }
