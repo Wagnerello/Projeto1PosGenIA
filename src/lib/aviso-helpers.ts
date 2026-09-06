@@ -53,3 +53,82 @@ export function getCategoriaAvisoConfig(categoria?: string) {
       return { label: categoria || 'Geral', badgeClass: 'bg-slate-50 text-slate-700 border-slate-200' };
   }
 }
+
+/**
+ * Filtra a lista de comunicados para o painel administrativo da síndica
+ * com base em busca textual (título e mensagem), categoria e escopo de destinatário.
+ */
+export function filterAvisosParaSindica(
+  avisos: AvisoData[],
+  buscaTexto: string = '',
+  categoriaFiltro: string = 'all',
+  destinatarioFiltro: string = 'all'
+): AvisoData[] {
+  if (!Array.isArray(avisos) || avisos.length === 0) return [];
+
+  const busca = buscaTexto.trim().toLowerCase();
+
+  return avisos.filter((av) => {
+    if (!av) return false;
+
+    // Filtro por categoria
+    if (categoriaFiltro !== 'all') {
+      const cat = av.categoria || 'Geral';
+      if (cat !== categoriaFiltro) return false;
+    }
+
+    // Filtro por destinatário ('todos' | 'bloco')
+    if (destinatarioFiltro !== 'all') {
+      if (destinatarioFiltro === 'todos' && av.destinatarioTipo !== 'todos') return false;
+      if (destinatarioFiltro === 'bloco' && av.destinatarioTipo !== 'bloco') return false;
+    }
+
+    // Filtro por busca textual (título ou mensagem ou blocoDestino)
+    if (busca) {
+      const titulo = (av.titulo || '').toLowerCase();
+      const mensagem = (av.mensagem || '').toLowerCase();
+      const bloco = (av.blocoDestino || '').toLowerCase();
+
+      const bateTitulo = titulo.includes(busca);
+      const bateMensagem = mensagem.includes(busca);
+      const bateBloco = bloco.includes(busca);
+
+      if (!bateTitulo && !bateMensagem && !bateBloco) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Calcula contadores estatísticos dos comunicados do mural.
+ */
+export function calcAvisosStats(avisos: AvisoData[]): {
+  total: number;
+  gerais: number;
+  blocos: number;
+} {
+  if (!Array.isArray(avisos)) {
+    return { total: 0, gerais: 0, blocos: 0 };
+  }
+
+  let gerais = 0;
+  let blocos = 0;
+
+  for (const av of avisos) {
+    if (av.destinatarioTipo === 'bloco') {
+      blocos++;
+    } else {
+      gerais++;
+    }
+  }
+
+  return {
+    total: avisos.length,
+    gerais,
+    blocos,
+  };
+}
+

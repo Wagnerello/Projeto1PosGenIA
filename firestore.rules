@@ -63,6 +63,12 @@ service cloud.firestore {
         isSuperAdmin() || 
         (hasUserData() && getUserData().role == 'sindica' && getUserData().condominioId == resource.data.condominioId)
       );
+
+      // Exclusão permitida para Super Admin ou síndica do condomínio
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (hasUserData() && getUserData().role == 'sindica' && getUserData().condominioId == resource.data.condominioId)
+      );
     }
 
     // Regras para a coleção de ocorrências

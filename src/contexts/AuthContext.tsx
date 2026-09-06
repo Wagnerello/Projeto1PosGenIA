@@ -10,6 +10,7 @@ interface AppUser {
   nome: string;
   email: string;
   role: UserRole;
+  status?: string;
   condominioId?: string;
   unidadeId?: string;
   unidadeNome?: string;

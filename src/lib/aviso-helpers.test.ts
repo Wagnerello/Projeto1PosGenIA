@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   filterAvisosParaMorador,
   formatAvisoPublicoAlvo,
-  getCategoriaAvisoConfig
+  getCategoriaAvisoConfig,
+  filterAvisosParaSindica,
+  calcAvisosStats
 } from './aviso-helpers';
 import type { AvisoData } from './firestore';
 
@@ -98,6 +100,86 @@ describe('aviso-helpers', () => {
       expect(getCategoriaAvisoConfig('Convivência').label).toBe('Convivência');
       expect(getCategoriaAvisoConfig('Geral').label).toBe('Geral');
       expect(getCategoriaAvisoConfig(undefined).label).toBe('Geral');
+    });
+  });
+
+  describe('filterAvisosParaSindica', () => {
+    const listaSindica: AvisoData[] = [
+      {
+        id: '1',
+        condominioId: 'c1',
+        titulo: 'Manutenção Hidráulica',
+        mensagem: 'Fechamento do registro geral',
+        categoria: 'Manutenção',
+        destinatarioTipo: 'todos',
+        criadoPorNome: 'Síndica',
+        criadoPorUid: 's1',
+      },
+      {
+        id: '2',
+        condominioId: 'c1',
+        titulo: 'Reunião de Assembleia Extraordinária',
+        mensagem: 'Eleição de subsíndico',
+        categoria: 'Assembleia',
+        destinatarioTipo: 'todos',
+        criadoPorNome: 'Síndica',
+        criadoPorUid: 's1',
+      },
+      {
+        id: '3',
+        condominioId: 'c1',
+        titulo: 'Limpeza de Caixas de Gordura',
+        mensagem: 'Acesso aos apartamentos térreos do Bloco A',
+        categoria: 'Manutenção',
+        destinatarioTipo: 'bloco',
+        blocoDestino: 'Bloco A',
+        criadoPorNome: 'Síndica',
+        criadoPorUid: 's1',
+      },
+    ];
+
+    it('deve retornar todos os comunicados sem filtros', () => {
+      expect(filterAvisosParaSindica(listaSindica)).toHaveLength(3);
+    });
+
+    it('deve filtrar por busca de texto no título e mensagem', () => {
+      expect(filterAvisosParaSindica(listaSindica, 'hidráulica')).toHaveLength(1);
+      expect(filterAvisosParaSindica(listaSindica, 'subsíndico')).toHaveLength(1);
+      expect(filterAvisosParaSindica(listaSindica, 'bloco a')).toHaveLength(1);
+      expect(filterAvisosParaSindica(listaSindica, 'termo_inexistente')).toHaveLength(0);
+    });
+
+    it('deve filtrar por categoria', () => {
+      expect(filterAvisosParaSindica(listaSindica, '', 'Manutenção')).toHaveLength(2);
+      expect(filterAvisosParaSindica(listaSindica, '', 'Assembleia')).toHaveLength(1);
+      expect(filterAvisosParaSindica(listaSindica, '', 'Segurança')).toHaveLength(0);
+    });
+
+    it('deve filtrar por destinatário (todos vs bloco)', () => {
+      expect(filterAvisosParaSindica(listaSindica, '', 'all', 'todos')).toHaveLength(2);
+      expect(filterAvisosParaSindica(listaSindica, '', 'all', 'bloco')).toHaveLength(1);
+    });
+
+    it('deve lidar com arrays vazios', () => {
+      expect(filterAvisosParaSindica([])).toEqual([]);
+    });
+  });
+
+  describe('calcAvisosStats', () => {
+    it('deve contabilizar corretamente totais, gerais e por bloco', () => {
+      const stats = calcAvisosStats([
+        { id: '1', condominioId: 'c1', titulo: 'T1', mensagem: 'M1', destinatarioTipo: 'todos', criadoPorNome: '', criadoPorUid: '' },
+        { id: '2', condominioId: 'c1', titulo: 'T2', mensagem: 'M2', destinatarioTipo: 'bloco', blocoDestino: 'B1', criadoPorNome: '', criadoPorUid: '' },
+        { id: '3', condominioId: 'c1', titulo: 'T3', mensagem: 'M3', destinatarioTipo: 'bloco', blocoDestino: 'B2', criadoPorNome: '', criadoPorUid: '' },
+      ]);
+
+      expect(stats.total).toBe(3);
+      expect(stats.gerais).toBe(1);
+      expect(stats.blocos).toBe(2);
+    });
+
+    it('deve retornar zeros para array vazio', () => {
+      expect(calcAvisosStats([])).toEqual({ total: 0, gerais: 0, blocos: 0 });
     });
   });
 });

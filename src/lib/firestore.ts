@@ -1,5 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { getTimestampMillis } from "./date-utils";
+import { updateUnitNameWithNewBlock, sortUnits } from "./unit-helpers";
 
 // ============================================================================
 // Helpers locais
@@ -193,7 +195,8 @@ export const createSindicaUser = async ({
 export const getUnidades = async (condominioId: string) => {
   const q = query(collection(db, `condominios/${condominioId}/unidades`));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+  const items = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+  return sortUnits(items);
 };
 
 export const getUnidade = async (condominioId: string, unidadeId: string) => {
@@ -250,6 +253,126 @@ export const resetUnidades = async (condominioId: string, novasUnidades: any[]) 
     })
   );
   await Promise.all(promessasAdd);
+};
+
+/**
+ * Renomeia um bloco/torre em cascata no condomínio.
+ * Atualiza:
+ * 1. Todas as unidades vinculadas ao bloco
+ * 2. Todos os moradores cadastrados vinculados a essas unidades
+ * 3. Todos os comunicados do mural direcionados a esse bloco
+ * 4. Todas as ocorrências vinculadas a essas unidades
+ */
+export const renameBlocoEmCascata = async (
+  condominioId: string,
+  blocoAntigo: string,
+  blocoNovo: string
+) => {
+  const antigoNorm = blocoAntigo.trim().toLowerCase();
+  const novoTrim = blocoNovo.trim();
+
+  // 1. Atualiza unidades do condomínio
+  const snapshotUnidades = await getDocs(collection(db, `condominios/${condominioId}/unidades`));
+  const unidadesAtualizadasIds: Set<string> = new Set();
+  const promessasUnidades: Promise<any>[] = [];
+
+  snapshotUnidades.docs.forEach((d) => {
+    const data = d.data();
+    const torreAtual = (data.torre || '').trim().toLowerCase();
+    if (torreAtual === antigoNorm) {
+      unidadesAtualizadasIds.add(d.id);
+      promessasUnidades.push(
+        updateDoc(d.ref, {
+          torre: novoTrim,
+          updatedAt: new Date(),
+        })
+      );
+    }
+  });
+
+  await Promise.all(promessasUnidades);
+
+  // 2. Atualiza moradores vinculados a essas unidades ou cujo unidadeNome cita o bloco
+  const qUsers = query(collection(db, "users"), where("condominioId", "==", condominioId));
+  const snapUsers = await getDocs(qUsers);
+  const promessasUsers: Promise<any>[] = [];
+  let moradoresAfetados = 0;
+
+  snapUsers.docs.forEach((d) => {
+    const u = d.data();
+    const estaNaUnidade = u.unidadeId && unidadesAtualizadasIds.has(u.unidadeId);
+    const nomeContemBloco = u.unidadeNome && u.unidadeNome.toLowerCase().includes(antigoNorm);
+
+    if (estaNaUnidade || nomeContemBloco) {
+      moradoresAfetados++;
+      const novoNome = updateUnitNameWithNewBlock(u.unidadeNome || '', blocoAntigo, novoTrim);
+      promessasUsers.push(
+        updateDoc(d.ref, {
+          unidadeNome: novoNome,
+          updatedAt: new Date(),
+        })
+      );
+    }
+  });
+
+  await Promise.all(promessasUsers);
+
+  // 3. Atualiza comunicados do mural direcionados ao bloco
+  const qAvisos = query(collection(db, "avisos"), where("condominioId", "==", condominioId));
+  const snapAvisos = await getDocs(qAvisos);
+  const promessasAvisos: Promise<any>[] = [];
+  let avisosAfetados = 0;
+
+  snapAvisos.docs.forEach((d) => {
+    const av = d.data();
+    const isBloco = av.destinatarioTipo === 'bloco' || av.tipoAlvo === 'bloco';
+    const blocoDestino = (av.blocoDestino || av.blocoAlvo || '').trim().toLowerCase();
+
+    if (isBloco && blocoDestino === antigoNorm) {
+      avisosAfetados++;
+      promessasAvisos.push(
+        updateDoc(d.ref, {
+          blocoDestino: novoTrim,
+          blocoAlvo: novoTrim,
+          updatedAt: new Date(),
+        })
+      );
+    }
+  });
+
+  await Promise.all(promessasAvisos);
+
+  // 4. Atualiza ocorrências vinculadas às unidades do bloco
+  const qOcorrencias = query(collection(db, "ocorrencias"), where("condominioId", "==", condominioId));
+  const snapOcorrencias = await getDocs(qOcorrencias);
+  const promessasOcorrencias: Promise<any>[] = [];
+  let ocorrenciasAfetadas = 0;
+
+  snapOcorrencias.docs.forEach((d) => {
+    const oc = d.data();
+    const estaNaUnidade = oc.unidadeId && unidadesAtualizadasIds.has(oc.unidadeId);
+    const nomeContemBloco = oc.unidadeNome && oc.unidadeNome.toLowerCase().includes(antigoNorm);
+
+    if (estaNaUnidade || nomeContemBloco) {
+      ocorrenciasAfetadas++;
+      const novoNome = updateUnitNameWithNewBlock(oc.unidadeNome || '', blocoAntigo, novoTrim);
+      promessasOcorrencias.push(
+        updateDoc(d.ref, {
+          unidadeNome: novoNome,
+          updatedAt: new Date(),
+        })
+      );
+    }
+  });
+
+  await Promise.all(promessasOcorrencias);
+
+  return {
+    unidadesAfetadas: promessasUnidades.length,
+    moradoresAfetados,
+    avisosAfetados,
+    ocorrenciasAfetadas,
+  };
 };
 
 // ============================================================================
@@ -372,6 +495,76 @@ export const getActiveUsers = async (condominioId: string) => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
 };
 
+/**
+ * Retorna todos os moradores do condomínio (ativos, pendentes e inativos),
+ * excluindo perfis de síndica e superadmin.
+ */
+export const getMoradores = async (condominioId: string) => {
+  const q = query(
+    collection(db, "users"),
+    where("condominioId", "==", condominioId)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(doc => ({ id: doc.id, ...(doc.data() as any) }))
+    .filter(u => u.role !== 'sindica' && u.role !== 'superadmin')
+    .sort((a, b) => getTimestampMillis(b.createdAt) - getTimestampMillis(a.createdAt));
+};
+
+/**
+ * Atualiza dados cadastrais de um morador (nome, unidade, telefone, status, role).
+ */
+export const updateMorador = async (
+  uid: string,
+  dados: {
+    nome?: string;
+    unidadeId?: string;
+    unidadeNome?: string;
+    telefone?: string;
+    role?: string;
+    status?: 'ativo' | 'pendente' | 'inativo';
+  }
+) => {
+  const dadosSanitizados = Object.fromEntries(
+    Object.entries(dados).filter(([_, v]) => v !== undefined)
+  );
+  const ref = doc(db, "users", uid);
+  await updateDoc(ref, {
+    ...dadosSanitizados,
+    updatedAt: new Date(),
+  });
+  return { id: uid, ...dados };
+};
+
+/**
+ * Altera o status do morador garantindo sincronização entre status e role.
+ * - 'ativo' -> role: 'morador'
+ * - 'pendente' -> role: 'pending'
+ * - 'inativo' -> role: 'rejected'
+ */
+export const updateMoradorStatus = async (
+  uid: string,
+  novoStatus: 'ativo' | 'pendente' | 'inativo'
+) => {
+  const role = novoStatus === 'ativo' ? 'morador' : novoStatus === 'pendente' ? 'pending' : 'rejected';
+  const ref = doc(db, "users", uid);
+  await updateDoc(ref, {
+    status: novoStatus,
+    role,
+    updatedAt: new Date(),
+  });
+  return { id: uid, status: novoStatus, role };
+};
+
+/**
+ * Exclui o registro de morador do Firestore.
+ */
+export const deleteMorador = async (uid: string) => {
+  const ref = doc(db, "users", uid);
+  await deleteDoc(ref);
+  return uid;
+};
+
 export const getUser = async (uid: string) => {
   const ref = doc(db, "users", uid);
   const snap = await getDoc(ref);
@@ -394,6 +587,7 @@ export type AvisoData = {
   criadoPorNome: string;
   criadoPorUid: string;
   createdAt?: any;
+  updatedAt?: any;
 };
 
 export const getAvisos = async (condominioId: string, moradorBloco?: string): Promise<AvisoData[]> => {
@@ -408,11 +602,7 @@ export const getAvisos = async (condominioId: string, moradorBloco?: string): Pr
   })) as AvisoData[];
 
   // Ordenação decrescente por data de criação
-  list.sort((a, b) => {
-    const timeA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
-    const timeB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
-    return timeB - timeA;
-  });
+  list.sort((a, b) => getTimestampMillis(b.createdAt) - getTimestampMillis(a.createdAt));
 
   // Se moradorBloco for informado, filtra comunicados globais ('todos') ou para o respectivo bloco
   if (moradorBloco) {
@@ -427,11 +617,32 @@ export const getAvisos = async (condominioId: string, moradorBloco?: string): Pr
 };
 
 export const createAviso = async (dados: Omit<AvisoData, 'id'>) => {
+  // Remove chaves com valor undefined para não disparar erro no Firestore
+  const dadosSanitizados = Object.fromEntries(
+    Object.entries(dados).filter(([_, v]) => v !== undefined)
+  );
+
   const docRef = await addDoc(collection(db, "avisos"), {
-    ...dados,
+    ...dadosSanitizados,
     createdAt: new Date(),
   });
   return { id: docRef.id, ...dados };
+};
+
+export const updateAviso = async (
+  avisoId: string,
+  dados: Partial<Omit<AvisoData, 'id'>>
+) => {
+  const dadosSanitizados = Object.fromEntries(
+    Object.entries(dados).filter(([_, v]) => v !== undefined)
+  );
+
+  const ref = doc(db, "avisos", avisoId);
+  await updateDoc(ref, {
+    ...dadosSanitizados,
+    updatedAt: new Date(),
+  });
+  return { id: avisoId, ...dados };
 };
 
 export const deleteAviso = async (avisoId: string) => {

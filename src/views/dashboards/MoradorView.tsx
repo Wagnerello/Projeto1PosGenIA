@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,12 +11,9 @@ import {
   Clock,
   CheckCircle2,
   LogOut,
-  X,
-  Send,
   Loader2,
   Home,
   RefreshCw,
-  Sparkles,
   Building2,
   Users
 } from 'lucide-react';
@@ -29,7 +24,9 @@ import { getOcorrencias, createOcorrencia, getCondominio, getAvisos, getUnidade,
 import { classificarOcorrenciaComIA } from '@/lib/ai-triagem';
 import { getStatusConfig, getResponsavelConfig } from '@/lib/ocorrencia-helpers';
 import { getCategoriaAvisoConfig } from '@/lib/aviso-helpers';
-import { OcorrenciaTimelineModal } from '@/components/common/OcorrenciaTimelineModal';
+import { NovaOcorrenciaJanela } from '@/components/dashboard/NovaOcorrenciaJanela';
+import { OcorrenciaTimelineJanela } from '@/components/common/OcorrenciaTimelineJanela';
+import { formatarDataHora } from '@/lib/date-utils';
 
 export default function MoradorView() {
   const { appUser } = useAuth();
@@ -40,10 +37,8 @@ export default function MoradorView() {
   const [loading, setLoading] = useState(true);
   const [selectedOcorrencia, setSelectedOcorrencia] = useState<any | null>(null);
 
-  // Formulário Nova Ocorrência (sem categoria nem gravidade manuais)
+  // Janela Nova Ocorrência
   const [modalOpen, setModalOpen] = useState(false);
-  const [titulo, setTitulo] = useState('');
-  const [descricao, setDescricao] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorForm, setErrorForm] = useState('');
 
@@ -102,22 +97,14 @@ export default function MoradorView() {
     signOut(auth);
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!titulo.trim() || !descricao.trim()) {
-      setErrorForm('Preencha os campos obrigatórios.');
-      return;
-    }
+  const handleCriarOcorrencia = async (data: { titulo: string; descricao: string }) => {
     setErrorForm('');
     setSubmitting(true);
-
     try {
-      // Motor de IA classifica categoria e gravidade automaticamente
-      const triagem = await classificarOcorrenciaComIA(titulo.trim(), descricao.trim());
-
+      const triagem = await classificarOcorrenciaComIA(data.titulo, data.descricao);
       await createOcorrencia({
-        titulo: titulo.trim(),
-        descricao: descricao.trim(),
+        titulo: data.titulo,
+        descricao: data.descricao,
         categoria: triagem.categoria,
         urgencia: triagem.urgencia,
         iaJustificativa: triagem.justificativa,
@@ -129,9 +116,6 @@ export default function MoradorView() {
         autorEmail: appUser?.email || '',
         status: 'Pendente',
       });
-
-      setTitulo('');
-      setDescricao('');
       setModalOpen(false);
       await loadData();
     } catch (err) {
@@ -196,80 +180,6 @@ export default function MoradorView() {
           </div>
         </div>
 
-        {/* Modal / Card para Registro de Ocorrência */}
-        {modalOpen && (
-          <Card className="border-indigo-200 shadow-xl bg-white animate-in fade-in zoom-in-95 duration-150">
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b">
-              <div>
-                <CardTitle className="text-lg text-indigo-950">Registrar Chamado / Ocorrência</CardTitle>
-                <CardDescription>
-                  Informe a administração sobre reparos, barulho ou solicitações da sua unidade.
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setModalOpen(false)}>
-                <X className="h-5 w-5 text-slate-400" />
-              </Button>
-            </CardHeader>
-            <CardContent className="pt-5">
-              <form onSubmit={handleCreate} className="space-y-4">
-                {errorForm && (
-                  <p className="text-sm text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
-                    {errorForm}
-                  </p>
-                )}
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="titulo">Título da Solicitação *</Label>
-                  <Input
-                    id="titulo"
-                    placeholder="Ex: Vazamento de água na pia ou Lâmpada queimada"
-                    value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="descricao">Descrição dos Fatos *</Label>
-                  <textarea
-                    id="descricao"
-                    rows={4}
-                    className="w-full p-3 rounded-md border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Descreva com detalhes o que está acontecendo para a administração atuar..."
-                    value={descricao}
-                    onChange={(e) => setDescricao(e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Nota da Triagem por IA */}
-                <div className="p-3 bg-indigo-50/70 rounded-xl border border-indigo-100 flex items-start gap-2.5 text-xs text-indigo-900">
-                  <Sparkles className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold">Triagem e Priorização Inteligente</p>
-                    <p className="text-indigo-700 mt-0.5 leading-relaxed">
-                      A inteligência artificial analisa o seu relato para definir automaticamente a categoria e o nível de gravidade para a equipe da síndica.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                    {submitting ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analisando com IA e enviando...</>
-                    ) : (
-                      <><Send className="mr-2 h-4 w-4" /> Enviar Chamado</>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Tabs: Minhas Ocorrências e Mural de Avisos */}
         <Tabs defaultValue="ocorrencias" className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-sm bg-slate-200/80 p-1 rounded-xl">
@@ -285,7 +195,27 @@ export default function MoradorView() {
 
           {/* Tab 1: Minhas Ocorrências */}
           <TabsContent value="ocorrencias" className="mt-4">
-            <Card className="border-0 shadow-sm">
+            {modalOpen ? (
+              <NovaOcorrenciaJanela
+                unidadeNome={appUser?.unidadeNome || 'Minha Unidade'}
+                condominioNome={condoNome || 'Condomínio'}
+                submitting={submitting}
+                errorMessage={errorForm}
+                onCriar={handleCriarOcorrencia}
+                onVoltar={() => {
+                  setModalOpen(false);
+                  setErrorForm('');
+                }}
+              />
+            ) : selectedOcorrencia ? (
+              <OcorrenciaTimelineJanela
+                ocorrencia={selectedOcorrencia}
+                userRole="morador"
+                userName={appUser?.nome || 'Morador'}
+                onVoltar={() => setSelectedOcorrencia(null)}
+              />
+            ) : (
+              <Card className="border-0 shadow-sm">
               <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-800">Histórico de Ocorrências da Unidade</CardTitle>
@@ -358,7 +288,8 @@ export default function MoradorView() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
+        </TabsContent>
 
           {/* Tab 2: Mural de Avisos */}
           <TabsContent value="avisos" className="mt-4 space-y-4">
@@ -410,28 +341,7 @@ export default function MoradorView() {
               <div className="space-y-3.5">
                 {avisos.map((av) => {
                   const catCfg = getCategoriaAvisoConfig(av.categoria);
-                  let dataFormatada = 'Data recente';
-                  if (av.createdAt?.toDate) {
-                    dataFormatada = av.createdAt.toDate().toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
-                  } else if (av.createdAt) {
-                    try {
-                      dataFormatada = new Date(av.createdAt).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      });
-                    } catch {
-                      dataFormatada = 'Data recente';
-                    }
-                  }
+                  const dataFormatada = formatarDataHora(av.createdAt, 'Data recente');
 
                   const isBloco = av.destinatarioTipo === 'bloco';
 
@@ -485,17 +395,6 @@ export default function MoradorView() {
             )}
           </TabsContent>
         </Tabs>
-
-        {/* Modal: Linha do Tempo Transparente do Atendimento (Modo Leitura para Morador) */}
-        {selectedOcorrencia && (
-          <OcorrenciaTimelineModal
-            isOpen={Boolean(selectedOcorrencia)}
-            ocorrencia={selectedOcorrencia}
-            userRole="morador"
-            userName={appUser?.nome || 'Morador'}
-            onClose={() => setSelectedOcorrencia(null)}
-          />
-        )}
       </main>
     </div>
   );

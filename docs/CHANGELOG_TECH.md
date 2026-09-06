@@ -3,6 +3,47 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+
+## [v1.1.0] - 2026-09-06
+- [feat] renomeacao de blocos em cascata com suporte a numeros, letras e nomes livres — Refs: RN-001, spec §2
+  - Adiciona tipo BlocoEstilo e funções generateBlockName, renameBlocoInUnits, updateUnitNameWithNewBlock, validateRenameBloco, sortUnits, compareUnits em unit-helpers.ts
+  - Implementa renameBlocoEmCascata em firestore.ts com atualização atômica em lote de unidades, moradores, comunicados do mural e ocorrências
+  - Cria componente RenomearBlocoJanela com seletor de bloco, campo livre para novo nome, atalhos de sugestão e painel de impacto em cascata
+  - Atualiza RegerarEstruturaJanela com seletor de estilo de nomenclatura (letras ou números) e prévia em tempo real
+  - Integra em SindicaView: botão "Renomear Bloco", chips rápidos de blocos com lápis de edição e toast de confirmação com métricas de atualização
+  - Eleva a suíte de testes de 130 para 137 testes automatizados aprovados (7 novos testes para os helpers de bloco)
+- [fix] ordenacao de unidades por bloco e numero crescente em toda a aplicacao — Refs: RN-001, spec §2
+  - Adiciona compareUnits e sortUnits em unit-helpers.ts com comparação alfanumérica natural (9 < 10 < 11 < 101, Bloco A < Bloco B)
+  - Aplica sortUnits em getUnidades (firestore.ts) e em filterUnits (unit-helpers.ts) garantindo ordem consistente em todos os pontos de consumo
+  - Adiciona 7 testes unitários cobrindo ordenação numérica, imutabilidade do array original e filtragem com resultado ordenado
+- [refactor] simplificação visual da aba Visão Geral da Síndica — Refs: RN-001, spec §2
+  - Remove botão redundante "Nova Unidade" da barra de Ações Rápidas, mantendo foco nas rotinas de publicação e aprovação
+  - Remove card de convite dos moradores com mini QR Code da coluna secundária da Visão Geral, eliminando poluição visual e centralizando o recurso na aba dedicada "Convites & QR Code"
+  - Valida suíte de testes com 130 testes aprovados e compilação de produção bem-sucedida
+- [fix] erradicação de popups nativos de navegador (confirm/alert) e adoção de modais e toasts integrados — Refs: RN-001, spec §2, spec §3
+  - Remove 100% das chamadas a window.confirm e alert em SindicaView, OcorrenciaTimelineJanela e SindicaPanel
+  - Implementa modais integrados com backdrop blur para confirmação de rotação de QR Code de convite, recusa de morador e homologação de encerramento de chamado
+  - Implementa componente Toast/banner flutuante em SindicaView para feedbacks de sucesso, erro e status operacionais
+  - Corrige importações no unit-helpers.test.ts elevando a suíte para 130 testes automatizados aprovados (0 falhas)
+- [refactor] redesign de UX/UI do painel da Síndica com aba Visão Geral e desacoplamento de KPIs — Refs: RN-001, spec §2, spec §3
+  - Centraliza os 4 KPIs macro executivos exclusivamente na nova aba inicial "Visão Geral", permitindo navegação contextual direta ao clicar em cada indicador
+  - Remove a duplicação e persistência de KPIs fixos sobre as ferramentas de trabalho (Ocorrências, Mural, Unidades, Moradores, Aprovações, QR Code)
+  - Implementa Hero Executivo com callouts de atenção imediata (aprovações pendentes e encerramentos a homologar) e barra de atalhos operacionais rápidos
+  - Adiciona listas contextuais de chamados prioritários e último comunicado na Home para rápida tomada de decisão
+  - Garante 100% de conformidade com os testes automatizados (115 testes aprovados) e build limpo
+- [fix] sanitização e formatação universal de Timestamps Firestore evitando erro de objeto como filho React — Refs: RN-003, spec §3
+  - Cria utilitário date-utils.ts com conversão resiliente de objetos {seconds, nanoseconds}, .toDate(), Date e strings ISO
+  - Corrige regressão em OcorrenciaTimelineJanela onde formatarDataHora retornava o próprio objeto Timestamp para o React
+  - Integra formatarDataHora e getTimestampMillis em SindicaView, MoradorView e firestore.ts garantindo retorno string em todos os elementos JSX
+  - Adiciona suíte de testes unitários para date-utils totalizando 115 testes automatizados aprovados no projeto
+- [feat] CRUD no Mural de Avisos e gestao completa de status e dados de Moradores — Refs: RN-001, spec §2, spec §3
+  - Adiciona suporte completo a edição e exclusão de comunicados no Mural com componente NovaPublicacaoJanela adaptado
+  - Implementa busca textual e filtros combinados por categoria e público-alvo no Mural de Avisos da síndica
+  - Cria componente MoradorEditorJanela para edição cadastral de moradores, reatribuição de unidade e alteração de status
+  - Implementa utilitários puros morador-helpers.ts e aviso-helpers.ts com filtros, métricas e configurações visuais
+  - Atualiza firestore.rules para permitir exclusão segura de usuários pela síndica e realiza deploy automatizado no Firebase
+  - Adiciona tratamento no DashboardView para exibição de tela de bloqueio quando morador for inativo ou rejeitado
+  - Adiciona suítes de testes unitários para morador-helpers e aviso-helpers totalizando 109 testes com 100% de aprovação
 - [feat] gestao completa de unidades, mural de comunicados segmentado e linha do tempo — Refs: RN-001, RN-003, spec §3
   - Adiciona gestão de unidades prediais pela síndica (criação, edição, exclusão segura e regerar grade)
   - Implementa Mural de Comunicados segmentado com opção geral (todos) ou por bloco específico para Síndica e Morador

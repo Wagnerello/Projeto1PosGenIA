@@ -43,7 +43,7 @@ export default function DashboardView() {
   }
 
   // 4. Usuário com cadastro aguardando aprovação
-  if (appUser?.role === 'pending') {
+  if (appUser?.role === 'pending' || appUser?.status === 'pendente') {
     return (
       <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center justify-center">
         <Card className="max-w-md w-full text-center p-8 space-y-4 shadow-md bg-white border-slate-200">
@@ -64,7 +64,29 @@ export default function DashboardView() {
     );
   }
 
-  // 5. Visão 3: MORADOR (Área do Morador)
+  // 5. Usuário inativo ou rejeitado
+  if (appUser?.role === 'rejected' || appUser?.status === 'inativo') {
+    return (
+      <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center justify-center">
+        <Card className="max-w-md w-full text-center p-8 space-y-4 shadow-md bg-white border-slate-200">
+          <div className="mx-auto w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 border border-rose-200 shadow-sm">
+            <Clock className="h-7 w-7 text-rose-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800">Acesso Suspenso</h1>
+          <p className="text-slate-600 text-sm leading-relaxed">
+            Seu cadastro neste condomínio está inativo ou foi suspenso pela administração. Caso acredite que isto seja um engano, procure a síndica ou zeladoria do seu condomínio.
+          </p>
+          <div className="pt-2">
+            <Button variant="outline" className="w-full border-slate-300" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" /> Sair da Conta
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // 6. Visão 3: MORADOR (Área do Morador Ativo)
   return <MoradorView />;
 }
 

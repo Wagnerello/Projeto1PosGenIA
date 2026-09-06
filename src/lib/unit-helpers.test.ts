@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { formatUnitName, filterUnits, groupUnitsByFloor, isUnitDuplicate, countUnitsByTower, type UnitData } from './unit-helpers';
+import {
+  formatUnitName,
+  filterUnits,
+  groupUnitsByFloor,
+  isUnitDuplicate,
+  countUnitsByTower,
+  generateBlockName,
+  renameBlocoInUnits,
+  updateUnitNameWithNewBlock,
+  validateRenameBloco,
+  sortUnits,
+  type UnitData
+} from './unit-helpers';
 
 describe('formatUnitName', () => {
   it('deve formatar unidade completa com torre, andar e número', () => {
@@ -158,3 +170,164 @@ describe('countUnitsByTower', () => {
   });
 });
 
+describe('generateBlockName', () => {
+  it('deve retornar Torre Única se totalTorres for 1 em estilos padrão', () => {
+    expect(generateBlockName(1, 1, 'bloco_letras')).toBe('Torre Única');
+    expect(generateBlockName(1, 1, 'bloco_numeros')).toBe('Torre Única');
+  });
+
+  it('deve gerar blocos com letras (Bloco A, Bloco B)', () => {
+    expect(generateBlockName(1, 3, 'bloco_letras')).toBe('Bloco A');
+    expect(generateBlockName(2, 3, 'bloco_letras')).toBe('Bloco B');
+    expect(generateBlockName(3, 3, 'bloco_letras')).toBe('Bloco C');
+  });
+
+  it('deve gerar blocos com números (Bloco 1, Bloco 2)', () => {
+    expect(generateBlockName(1, 3, 'bloco_numeros')).toBe('Bloco 1');
+    expect(generateBlockName(2, 3, 'bloco_numeros')).toBe('Bloco 2');
+  });
+
+  it('deve gerar torres com letras e números', () => {
+    expect(generateBlockName(1, 2, 'torre_letras')).toBe('Torre A');
+    expect(generateBlockName(1, 2, 'torre_numeros')).toBe('Torre 1');
+  });
+
+  it('deve gerar apenas letras ou apenas números', () => {
+    expect(generateBlockName(1, 1, 'apenas_letras')).toBe('A');
+    expect(generateBlockName(1, 1, 'apenas_numeros')).toBe('1');
+    expect(generateBlockName(3, 5, 'apenas_numeros')).toBe('3');
+  });
+});
+
+describe('renameBlocoInUnits', () => {
+  const units: UnitData[] = [
+    { id: '1', torre: 'Bloco A', numero: '101' },
+    { id: '2', torre: 'Bloco A', numero: '102' },
+    { id: '3', torre: 'Bloco B', numero: '201' },
+  ];
+
+  it('deve renomear todas as unidades do bloco alvo preservando os demais', () => {
+    const atualizados = renameBlocoInUnits(units, 'Bloco A', 'Bloco 1');
+    expect(atualizados[0].torre).toBe('Bloco 1');
+    expect(atualizados[1].torre).toBe('Bloco 1');
+    expect(atualizados[2].torre).toBe('Bloco B');
+  });
+
+  it('deve ignorar diferenças de maiúsculas/minúsculas no bloco antigo', () => {
+    const atualizados = renameBlocoInUnits(units, 'bloco a', 'Torre 1');
+    expect(atualizados[0].torre).toBe('Torre 1');
+    expect(atualizados[1].torre).toBe('Torre 1');
+  });
+
+  it('deve retornar lista vazia se input for inválido', () => {
+    expect(renameBlocoInUnits([], 'A', 'B')).toEqual([]);
+    expect(renameBlocoInUnits(null as any, 'A', 'B')).toEqual([]);
+  });
+});
+
+describe('updateUnitNameWithNewBlock', () => {
+  it('deve substituir o prefixo do bloco mantendo o número do apartamento', () => {
+    expect(updateUnitNameWithNewBlock('Bloco A - Apto 101', 'Bloco A', 'Bloco 1')).toBe('Bloco 1 - Apto 101');
+    expect(updateUnitNameWithNewBlock('Bloco A - Apto 101 (2º andar)', 'Bloco A', 'Torre Sul')).toBe('Torre Sul - Apto 101 (2º andar)');
+  });
+
+  it('deve substituir quando a string for exatamente o nome do bloco', () => {
+    expect(updateUnitNameWithNewBlock('Bloco A', 'Bloco A', 'Bloco 1')).toBe('Bloco 1');
+  });
+
+  it('deve retornar o próprio nome caso o bloco antigo seja igual ao novo', () => {
+    expect(updateUnitNameWithNewBlock('Bloco A - Apto 101', 'Bloco A', 'Bloco A')).toBe('Bloco A - Apto 101');
+  });
+});
+
+describe('validateRenameBloco', () => {
+  it('deve rejeitar blocos vazios', () => {
+    expect(validateRenameBloco('', 'Bloco 1').valid).toBe(false);
+    expect(validateRenameBloco('Bloco A', '').valid).toBe(false);
+  });
+
+  it('deve rejeitar se o novo nome for igual ao atual', () => {
+    const res = validateRenameBloco('Bloco A', 'bloco a');
+    expect(res.valid).toBe(false);
+    expect(res.error).toContain('diferente');
+  });
+
+  it('deve alertar isMerging se o novo nome já existir entre os blocos', () => {
+    const res = validateRenameBloco('Bloco A', 'Bloco B', ['Bloco A', 'Bloco B', 'Bloco C']);
+    expect(res.valid).toBe(true);
+    expect(res.isMerging).toBe(true);
+  });
+
+  it('deve aprovar renomeação válida sem mesclagem', () => {
+    const res = validateRenameBloco('Bloco A', 'Bloco 1', ['Bloco A', 'Bloco B']);
+    expect(res.valid).toBe(true);
+    expect(res.isMerging).toBe(false);
+  });
+});
+
+describe('compareUnits / sortUnits', () => {
+  const mockUnits: UnitData[] = [
+    { id: '1', torre: 'Bloco B', andar: 1, numero: '102' },
+    { id: '2', torre: 'Bloco A', andar: 2, numero: '201' },
+    { id: '3', torre: 'Bloco A', andar: 1, numero: '102' },
+    { id: '4', torre: 'Bloco A', andar: 1, numero: '101' },
+    { id: '5', torre: 'Bloco B', andar: 1, numero: '101' },
+    { id: '6', torre: 'Bloco B', andar: 2, numero: '201' },
+  ];
+
+  it('deve ordenar por bloco e depois por número crescente', () => {
+    const sorted = sortUnits(mockUnits);
+    expect(sorted[0].torre).toBe('Bloco A');
+    expect(sorted[sorted.length - 1].torre).toBe('Bloco B');
+  });
+
+  it('deve ordenar por número crescente dentro do mesmo bloco (101 < 102 < 201)', () => {
+    const sorted = sortUnits(mockUnits).filter((u) => u.torre === 'Bloco A');
+    expect(sorted.map((u) => u.numero)).toEqual(['101', '102', '201']);
+  });
+
+  it('deve ordenar numericamente, não alfabeticamente (9 < 10 < 11, não "10" < "11" < "9")', () => {
+    const units: UnitData[] = [
+      { id: 'a', numero: '11' },
+      { id: 'b', numero: '9' },
+      { id: 'c', numero: '101' },
+      { id: 'd', numero: '10' },
+    ];
+    const sorted = sortUnits(units);
+    expect(sorted.map((u) => u.numero)).toEqual(['9', '10', '11', '101']);
+  });
+
+  it('deve colocar unidades sem bloco antes das com bloco (bloco vazio = string vazia = menor)', () => {
+    const units: UnitData[] = [
+      { id: 'x', torre: 'Bloco A', numero: '101' },
+      { id: 'y', torre: '', numero: '101' },
+      { id: 'z', numero: '101' },
+    ];
+    const sorted = sortUnits(units);
+    expect(sorted[0].torre ?? '').toBe('');
+    expect(sorted[sorted.length - 1].torre).toBe('Bloco A');
+  });
+
+  it('sortUnits não deve mutar o array original', () => {
+    const original = [...mockUnits];
+    sortUnits(mockUnits);
+    expect(mockUnits).toEqual(original);
+  });
+
+  it('sortUnits deve retornar array vazio para entradas inválidas', () => {
+    expect(sortUnits([])).toEqual([]);
+    expect(sortUnits(null as any)).toEqual([]);
+  });
+
+  it('filterUnits deve retornar resultados já ordenados', () => {
+    const units: UnitData[] = [
+      { id: '1', torre: 'Bloco B', numero: '101' },
+      { id: '2', torre: 'Bloco A', numero: '201' },
+      { id: '3', torre: 'Bloco A', numero: '101' },
+    ];
+    const result = filterUnits(units, '', 'all');
+    expect(result[0]).toMatchObject({ torre: 'Bloco A', numero: '101' });
+    expect(result[1]).toMatchObject({ torre: 'Bloco A', numero: '201' });
+    expect(result[2]).toMatchObject({ torre: 'Bloco B', numero: '101' });
+  });
+});

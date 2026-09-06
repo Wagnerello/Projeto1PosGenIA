@@ -108,22 +108,19 @@ export default function SindicaPanel() {
       await approveUser(uid);
       await loadMoradores();
     } catch (e) {
-      console.error(e);
-      alert('Erro ao aprovar morador.');
+      console.error('Erro ao aprovar morador:', e);
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleReject = async (uid: string) => {
-    if (!confirm('Deseja realmente recusar o acesso deste usuário?')) return;
     setActionLoading(uid);
     try {
       await rejectUser(uid);
       await loadMoradores();
     } catch (e) {
-      console.error(e);
-      alert('Erro ao recusar morador.');
+      console.error('Erro ao recusar morador:', e);
     } finally {
       setActionLoading(null);
     }
@@ -158,8 +155,7 @@ export default function SindicaPanel() {
       const u = await getUnidades(appUser!.condominioId!);
       setUnidades(u);
     } catch (err) {
-      console.error(err);
-      alert('Erro ao gerar infraestrutura.');
+      console.error('Erro ao gerar infraestrutura:', err);
     } finally {
       setGerando(false);
     }
@@ -176,13 +172,11 @@ export default function SindicaPanel() {
   };
 
   const handleRotateCode = async (kind: 'sindica' | 'morador') => {
-    if (!confirm(`Tem certeza? O código antigo deixará de funcionar imediatamente.`)) return;
     try {
       await rotateInviteCode(appUser!.condominioId!, kind);
       await loadAll();
     } catch (e) {
-      console.error(e);
-      alert('Erro ao rotacionar código.');
+      console.error('Erro ao rotacionar código:', e);
     }
   };
 
