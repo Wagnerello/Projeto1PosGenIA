@@ -4,6 +4,17 @@ Todas as alterações técnicas relevantes deste projeto são documentadas aqui,
 
 ## [Unreleased]
 
+## [v1.1.1] - 2026-09-07
+- [refactor] refatoração completa de UI/UX da visão da Síndica e todos os seus menus — Refs: RN-001, spec §2, spec §3
+  - Redesenha o Header da Síndica com layout SaaS minimalista, pill de status "Administração" e atalho tátil para cópia do código do condomínio
+  - Reorganiza TabsList por prioridade operacional e remove badges numéricos estáticos, ativando alertas visuais apenas quando houver pendências reais (aprovações ou validações)
+  - Transforma aba Visão Geral (Home) em central de ação com faixa de alerta unificada, 4 KPIs limpos clicáveis e grid em duas colunas com feed de chamados prioritários e mural
+  - Erradica duplicação de cards de métricas nas abas Unidades, Ocorrências e Moradores, economizando mais de 150px verticais e trazendo as tabelas para a primeira dobra de tela
+  - Implementa pílulas de filtro interativo com contadores em tempo real para status de ocorrências e de moradores
+  - Aprimora aba de Convites e QR Code com guia de ingresso em 3 etapas, conformidade LGPD, botão de cópia de mensagem para WhatsApp e rotação de código de segurança
+  - Atualiza UnitSelector e tela de registro com feedback visual consistente
+- [feat] renomear blocos em cascata e ordenação por número crescente (commit: 516d741) — Refs: nenhuma
+
 ## [v1.1.0] - 2026-09-06
 - [feat] renomeacao de blocos em cascata com suporte a numeros, letras e nomes livres — Refs: RN-001, spec §2
   - Adiciona tipo BlocoEstilo e funções generateBlockName, renameBlocoInUnits, updateUnitNameWithNewBlock, validateRenameBloco, sortUnits, compareUnits em unit-helpers.ts

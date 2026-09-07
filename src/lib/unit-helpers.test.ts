@@ -73,6 +73,12 @@ describe('filterUnits', () => {
     expect(result[0].id).toBe('4');
   });
 
+  it('deve lidar com busca case-insensitive e espaços extras', () => {
+    const result = filterUnits(mockUnits, '  bloco a  ', 'all');
+    expect(result).toHaveLength(3);
+    expect(result.every((u) => u.torre === 'Bloco A')).toBe(true);
+  });
+
   it('deve lidar com arrays vazios ou inválidos com segurança', () => {
     expect(filterUnits([], '101')).toEqual([]);
     expect(filterUnits(null as any, '101')).toEqual([]);

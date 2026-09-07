@@ -12,7 +12,6 @@ import {
   Users,
   UserCheck,
   UserX,
-  Clock,
   Megaphone,
   FileText,
   AlertTriangle,
@@ -30,7 +29,6 @@ import {
   X,
   LayoutDashboard,
   ArrowRight,
-  Sparkles,
   Layers
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -699,40 +697,55 @@ export default function SindicaView() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Header exclusivo da Síndica */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
-              <Building2 className="h-6 w-6" />
+      {/* Header da Administração */}
+      <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-6 py-3.5">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+              <Building2 className="h-5 w-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-slate-900 tracking-tight">
+                <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight truncate">
                   {condo?.nome || 'Gestão do Condomínio'}
                 </span>
-                <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200 text-xs">
-                  SÍNDICA
-                </Badge>
+                <span className="hidden sm:inline-flex text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-2 py-0.5 rounded-full">
+                  Administração
+                </span>
               </div>
-              <p className="text-xs text-slate-500">Painel administrativo operacional do condomínio</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-xs text-slate-400">Responsável</p>
-              <p className="text-sm font-semibold text-slate-700">{appUser?.nome || 'Síndica'}</p>
+          <div className="flex items-center gap-3">
+            {condo?.codigoConviteMorador && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600">
+                <span className="text-slate-400">Código do mural:</span>
+                <span className="font-mono font-bold text-slate-800">{condo.codigoConviteMorador}</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(condo.codigoConviteMorador, 'header-code')}
+                  className="ml-1 text-slate-400 hover:text-indigo-600 p-0.5 rounded transition-colors cursor-pointer"
+                  title="Copiar código do condomínio"
+                  aria-label="Copiar código do condomínio"
+                >
+                  {copiedField === 'header-code' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            )}
+
+            <div className="text-right hidden md:block">
+              <p className="text-xs font-semibold text-slate-700 truncate max-w-[150px]">{appUser?.nome || 'Síndica'}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout} className="border-slate-300">
-              <LogOut className="h-4 w-4 mr-1.5" /> Sair
+
+            <Button variant="outline" size="sm" onClick={handleLogout} className="border-slate-300 text-slate-700 h-9 text-xs">
+              <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sair
             </Button>
           </div>
         </div>
       </header>
 
       {/* Conteúdo Principal */}
-      <main className="max-w-7xl mx-auto w-full p-6 md:p-8 space-y-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 md:p-8 space-y-6 flex-1">
         {/* Wizard para primeiro mapeamento se não houver unidades */}
         {unidades.length === 0 ? (
           <Card className="border-indigo-100 shadow-md">
@@ -766,339 +779,290 @@ export default function SindicaView() {
           </Card>
         ) : (
           /* Abas de Operação da Síndica com Visão Geral (Home) */
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            {/* Barra de Navegação por Abas Horizontal Elegante */}
-            <TabsList className="bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300/60 shadow-2xs flex items-center gap-1.5 overflow-x-auto scrollbar-none h-auto w-full justify-start">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-5">
+            {/* Barra de Navegação por Abas Limpa e Sem Poluição */}
+            <TabsList className="bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 flex items-center gap-1 overflow-x-auto scrollbar-none h-auto w-full justify-start">
               <TabsTrigger
                 value="geral"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 Visão Geral
               </TabsTrigger>
 
               <TabsTrigger
-                value="ocorrencias"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0"
-              >
-                <FileText className="h-4 w-4" />
-                Ocorrências
-                {ocorrencias.length > 0 && (
-                  <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-                    {ocorrencias.length}
-                  </span>
-                )}
-              </TabsTrigger>
-
-              <TabsTrigger
-                value="mural"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0"
-              >
-                <Megaphone className="h-4 w-4" />
-                Mural
-                {avisos.length > 0 && (
-                  <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-                    {avisos.length}
-                  </span>
-                )}
-              </TabsTrigger>
-
-              <TabsTrigger
-                value="moradores"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0"
-              >
-                <Users className="h-4 w-4" />
-                Moradores
-                {moradores.length > 0 && (
-                  <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-                    {moradores.length}
-                  </span>
-                )}
-              </TabsTrigger>
-
-              <TabsTrigger
-                value="unidades"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0"
-              >
-                <Building2 className="h-4 w-4" />
-                Unidades
-                {unidades.length > 0 && (
-                  <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-                    {unidades.length}
-                  </span>
-                )}
-              </TabsTrigger>
-
-              <TabsTrigger
                 value="aprovacoes"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 relative"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900 relative"
               >
                 <UserCheck className="h-4 w-4" />
                 Aprovações
                 {pendingUsers.length > 0 && (
-                  <span className="bg-rose-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold animate-pulse">
+                  <span className="bg-rose-500 text-white px-1.5 py-0.2 rounded-full text-[10px] font-bold">
                     {pendingUsers.length}
                   </span>
                 )}
               </TabsTrigger>
 
               <TabsTrigger
+                value="ocorrencias"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900 relative"
+              >
+                <FileText className="h-4 w-4" />
+                Ocorrências
+                {ocorrenciasStats.aguardandoValidacao > 0 && (
+                  <span className="bg-purple-600 text-white px-1.5 py-0.2 rounded-full text-[10px] font-bold" title="Chamados aguardando sua validação">
+                    {ocorrenciasStats.aguardandoValidacao}
+                  </span>
+                )}
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="mural"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900"
+              >
+                <Megaphone className="h-4 w-4" />
+                Comunicados
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="moradores"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900"
+              >
+                <Users className="h-4 w-4" />
+                Moradores
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="unidades"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900"
+              >
+                <Building2 className="h-4 w-4" />
+                Unidades
+              </TabsTrigger>
+
+              <TabsTrigger
                 value="qrcode"
-                className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-xs px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0"
+                className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900"
               >
                 <QrCode className="h-4 w-4" />
-                Convites & QR Code
+                Convites & QR
               </TabsTrigger>
             </TabsList>
 
             {/* Tab: Visão Geral (HOME DA APLICAÇÃO) */}
-            <TabsContent value="geral" className="space-y-6 mt-0">
-              {/* Hero Banner Executivo */}
-              <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white border border-slate-800 shadow-sm relative overflow-hidden">
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs font-mono uppercase tracking-wider text-indigo-300 font-semibold">
-                        Gestão Ativa
-                      </span>
-                    </div>
-                    <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white">
-                      {condo?.nome || 'Condomínio'}
-                    </h2>
-                    <p className="text-xs text-slate-300 max-w-xl">
-                      Painel centralizado com indicadores executivos, atalhos operacionais e resumo em tempo real do condomínio.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-start md:self-auto">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={loadAllData}
-                      className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs font-medium cursor-pointer"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Atualizar Indicadores
-                    </Button>
-                  </div>
+            <TabsContent value="geral" className="space-y-5 mt-0">
+              {/* Barra de Boas-Vindas e Ações Rápidas */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                    Olá, {appUser?.nome ? appUser.nome.split(' ')[0] : 'Síndica'}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Resumo do condomínio em tempo real.
+                  </p>
                 </div>
 
-                {/* Callouts de Alertas Prioritários na Home */}
-                {(pendingUsers.length > 0 || ocorrenciasStats.aguardandoValidacao > 0) && (
-                  <div className="mt-5 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {pendingUsers.length > 0 && (
-                      <div className="p-3 bg-amber-500/15 border border-amber-400/30 rounded-xl flex items-center justify-between text-xs text-amber-200">
-                        <div className="flex items-center gap-2">
-                          <UserCheck className="h-4 w-4 text-amber-400 shrink-0" />
-                          <span><strong>{pendingUsers.length}</strong> morador(es) aguardando aprovação</span>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => setActiveTab('aprovacoes')}
-                          className="h-7 px-2.5 text-[11px] bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold cursor-pointer"
-                        >
-                          Revisar
-                        </Button>
-                      </div>
-                    )}
-
-                    {ocorrenciasStats.aguardandoValidacao > 0 && (
-                      <div className="p-3 bg-purple-500/15 border border-purple-400/30 rounded-xl flex items-center justify-between text-xs text-purple-200">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-purple-300 shrink-0" />
-                          <span><strong>{ocorrenciasStats.aguardandoValidacao}</strong> chamado(s) aguardando sua validação</span>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => setActiveTab('ocorrencias')}
-                          className="h-7 px-2.5 text-[11px] bg-purple-400 hover:bg-purple-300 text-purple-950 font-bold cursor-pointer"
-                        >
-                          Validar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Grid dos 4 KPIs Executivos da Home (Interativos e Clicáveis) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* KPI 1: Unidades */}
-                <div
-                  onClick={() => setActiveTab('unidades')}
-                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs hover:border-indigo-300 hover:shadow-md transition-all duration-200 cursor-pointer group space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unidades Mapeadas</span>
-                    <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                      <Building2 className="h-4 w-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-slate-900 tracking-tight">{unidades.length}</p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      <span className="font-semibold text-indigo-600">{unidadesOcupadas}</span> ocupadas ({unidades.length > 0 ? Math.round((unidadesOcupadas / unidades.length) * 100) : 0}%)
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-indigo-600 group-hover:text-indigo-700">
-                    <span>Ver mapa predial</span>
-                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </div>
-
-                {/* KPI 2: Moradores Ativos */}
-                <div
-                  onClick={() => setActiveTab('moradores')}
-                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs hover:border-emerald-300 hover:shadow-md transition-all duration-200 cursor-pointer group space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Moradores Ativos</span>
-                    <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                      <Users className="h-4 w-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-slate-900 tracking-tight">{activeUsers.length}</p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {moradoresStats.inativos > 0 ? (
-                        <span className="text-slate-500 font-medium">{moradoresStats.inativos} inativo(s) / suspenso(s)</span>
-                      ) : (
-                        <span className="text-emerald-600 font-medium">Todos com acesso regular</span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-emerald-600 group-hover:text-emerald-700">
-                    <span>Gerenciar cadastros</span>
-                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </div>
-
-                {/* KPI 3: Aprovações Pendentes */}
-                <div
-                  onClick={() => setActiveTab('aprovacoes')}
-                  className={`bg-white rounded-2xl p-5 border shadow-2xs transition-all duration-200 cursor-pointer group space-y-3 ${
-                    pendingUsers.length > 0
-                      ? 'border-rose-200 hover:border-rose-400 hover:shadow-md bg-rose-50/10'
-                      : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aguardando Aprovação</span>
-                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
-                      pendingUsers.length > 0
-                        ? 'bg-rose-100 text-rose-700 group-hover:bg-rose-600 group-hover:text-white'
-                        : 'bg-slate-100 text-slate-600 group-hover:bg-slate-800 group-hover:text-white'
-                    }`}>
-                      <UserCheck className="h-4 w-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className={`text-3xl font-bold tracking-tight ${pendingUsers.length > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
-                      {pendingUsers.length}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {pendingUsers.length > 0 ? 'Requer validação de moradia' : 'Nenhuma solicitação pendente'}
-                    </p>
-                  </div>
-                  <div className={`pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium ${
-                    pendingUsers.length > 0 ? 'text-rose-600 group-hover:text-rose-700' : 'text-slate-600 group-hover:text-slate-800'
-                  }`}>
-                    <span>Abrir fila de liberação</span>
-                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </div>
-
-                {/* KPI 4: Chamados em Aberto */}
-                <div
-                  onClick={() => setActiveTab('ocorrencias')}
-                  className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs hover:border-amber-300 hover:shadow-md transition-all duration-200 cursor-pointer group space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Chamados em Aberto</span>
-                    <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-slate-900 tracking-tight">
-                      {ocorrenciasStats.pendentes + ocorrenciasStats.emAtendimento + ocorrenciasStats.aguardandoValidacao}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      <span className="font-semibold text-emerald-600">{ocorrenciasStats.resolvidas}</span> resolvidos de {ocorrencias.length}
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-amber-600 group-hover:text-amber-700">
-                    <span>Ver atendimentos</span>
-                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Barra de Ações Rápidas (Quick Actions) */}
-              <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="h-4 w-4 text-indigo-600" /> Ações Rápidas:
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     size="sm"
                     onClick={openNovoAviso}
-                    className="h-8 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
+                    className="h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs cursor-pointer"
                   >
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Publicar no Mural
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setActiveTab('aprovacoes')}
-                    className="h-8 text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
-                  >
-                    <UserCheck className="h-3.5 w-3.5 mr-1 text-slate-500" /> Fila de Aprovações ({pendingUsers.length})
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Novo Comunicado
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => copyToClipboard(moradorLink, 'home')}
-                    className="h-8 text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    className="h-9 text-xs font-medium border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl cursor-pointer"
                   >
                     {copiedField === 'home' ? (
-                      <><Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Link Copiado!</>
+                      <><Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Link Copiado</>
                     ) : (
-                      <><Copy className="h-3.5 w-3.5 mr-1 text-slate-500" /> Copiar Link Convite</>
+                      <><Copy className="h-3.5 w-3.5 mr-1 text-slate-500" /> Copiar Convite</>
                     )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={loadAllData}
+                    className="h-9 w-9 p-0 text-slate-500 hover:text-slate-800 rounded-xl"
+                    title="Atualizar dados"
+                    aria-label="Atualizar dados"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
 
-              {/* Grid Operacional em 2 Colunas: Chamados Ativos e Mural/Convite */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Coluna Esquerda (7 colunas): Chamados Críticos & Pendentes */}
-                <div className="lg:col-span-7 space-y-4">
+              {/* Alerta de Ações Prioritárias (Exibido apenas quando houver pendências reais) */}
+              {pendingUsers.length > 0 || ocorrenciasStats.aguardandoValidacao > 0 ? (
+                <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Ações Pendentes</p>
+                      <p className="text-xs text-amber-800 mt-0.5">
+                        {pendingUsers.length > 0 && `${pendingUsers.length} morador(es) aguardando aprovação`}
+                        {pendingUsers.length > 0 && ocorrenciasStats.aguardandoValidacao > 0 && ' • '}
+                        {ocorrenciasStats.aguardandoValidacao > 0 && `${ocorrenciasStats.aguardandoValidacao} chamado(s) para validar`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {pendingUsers.length > 0 && (
+                      <Button
+                        size="sm"
+                        onClick={() => setActiveTab('aprovacoes')}
+                        className="h-8 px-3 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg cursor-pointer"
+                      >
+                        Aprovações ({pendingUsers.length})
+                      </Button>
+                    )}
+                    {ocorrenciasStats.aguardandoValidacao > 0 && (
+                      <Button
+                        size="sm"
+                        onClick={() => setActiveTab('ocorrencias')}
+                        className="h-8 px-3 text-xs bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg cursor-pointer"
+                      >
+                        Validar ({ocorrenciasStats.aguardandoValidacao})
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="px-4 py-3 bg-emerald-50/50 border border-emerald-200/60 rounded-xl flex items-center gap-2 text-xs text-emerald-800">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>Nenhuma pendência urgente. Todos os cadastros e chamados estão em dia.</span>
+                </div>
+              )}
+
+              {/* 4 Indicadores Principais */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {/* 1. Solicitações Pendentes */}
+                <div
+                  onClick={() => setActiveTab('aprovacoes')}
+                  className={`bg-white rounded-2xl p-4 border transition-all duration-150 cursor-pointer group space-y-2.5 ${
+                    pendingUsers.length > 0
+                      ? 'border-rose-200 bg-rose-50/20 hover:border-rose-300 shadow-xs'
+                      : 'border-slate-200/80 hover:border-slate-300 shadow-xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500">Aprovações</span>
+                    <UserCheck className={`h-4 w-4 ${pendingUsers.length > 0 ? 'text-rose-600' : 'text-slate-400'}`} />
+                  </div>
+                  <div>
+                    <p className={`text-2xl font-bold tracking-tight ${pendingUsers.length > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+                      {pendingUsers.length}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {pendingUsers.length > 0 ? 'Aguardando validação' : 'Nenhuma pendente'}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-600 group-hover:text-indigo-600">
+                    <span>Ver solicitações</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+
+                {/* 2. Chamados Ativos */}
+                <div
+                  onClick={() => setActiveTab('ocorrencias')}
+                  className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-indigo-300 transition-all duration-150 cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500">Chamados Ativos</span>
+                    <FileText className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 tracking-tight">
+                      {ocorrenciasStats.pendentes + ocorrenciasStats.emAtendimento + ocorrenciasStats.aguardandoValidacao}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {ocorrenciasStats.resolvidas} resolvidos de {ocorrencias.length}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-600 group-hover:text-indigo-600">
+                    <span>Ver ocorrências</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+
+                {/* 3. Moradores Ativos */}
+                <div
+                  onClick={() => setActiveTab('moradores')}
+                  className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-all duration-150 cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500">Moradores</span>
+                    <Users className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 tracking-tight">{activeUsers.length}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {moradoresStats.inativos > 0 ? `${moradoresStats.inativos} inativo(s)` : 'Acesso liberado'}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-600 group-hover:text-emerald-700">
+                    <span>Gerenciar cadastros</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+
+                {/* 4. Unidades Ocupadas */}
+                <div
+                  onClick={() => setActiveTab('unidades')}
+                  className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-indigo-300 transition-all duration-150 cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500">Ocupação</span>
+                    <Building2 className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 tracking-tight">
+                      {unidades.length > 0 ? `${Math.round((unidadesOcupadas / unidades.length) * 100)}%` : '0%'}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {unidadesOcupadas} de {unidades.length} unidades ocupadas
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-600 group-hover:text-indigo-600">
+                    <span>Ver apartamentos</span>
+                    <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid de Atividades: Ocorrências e Mural */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                {/* Coluna Esquerda: Ocorrências Recentes */}
+                <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-bold text-slate-900 text-base">Atendimentos Prioritários</h3>
-                      <p className="text-xs text-slate-500">Chamados em aberto que exigem despacho ou homologação.</p>
+                      <h3 className="font-bold text-slate-900 text-sm">Ocorrências Recentes</h3>
+                      <p className="text-xs text-slate-500">Chamados que exigem atenção ou despacho.</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setActiveTab('ocorrencias')}
-                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 cursor-pointer"
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-800 h-8 px-2.5 cursor-pointer"
                     >
-                      Ver todos ({ocorrencias.length}) <ArrowRight className="h-3 w-3 ml-1" />
+                      Ver todas ({ocorrencias.length}) <ArrowRight className="h-3 w-3 ml-1" />
                     </Button>
                   </div>
 
                   {chamadosAtencao.length === 0 ? (
-                    <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center text-slate-400 space-y-2">
-                      <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto" />
-                      <p className="text-sm font-semibold text-slate-700">Tudo resolvido!</p>
-                      <p className="text-xs text-slate-400">Não há ocorrências pendentes no condomínio neste momento.</p>
+                    <div className="py-8 text-center text-slate-400 space-y-2 border border-dashed border-slate-200 rounded-xl">
+                      <CheckCircle2 className="h-7 w-7 text-emerald-500 mx-auto" />
+                      <p className="text-xs font-semibold text-slate-700">Sem chamados pendentes</p>
+                      <p className="text-[11px] text-slate-400">Todas as ocorrências registradas foram resolvidas.</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                       {chamadosAtencao.map((oc) => {
                         const stCfg = getStatusConfig(oc.status);
                         const precisaValidacao = oc.status === 'Aguardando Validação da Síndica';
@@ -1106,42 +1070,42 @@ export default function SindicaView() {
                         return (
                           <div
                             key={oc.id}
-                            className={`p-4 bg-white rounded-2xl border transition-all duration-150 shadow-2xs hover:shadow-xs space-y-2.5 ${
-                              precisaValidacao ? 'border-purple-200 bg-purple-50/10' : 'border-slate-200'
+                            className={`p-3.5 rounded-xl border transition-colors flex items-center justify-between gap-3 ${
+                              precisaValidacao
+                                ? 'bg-purple-50/40 border-purple-200'
+                                : 'bg-slate-50/60 border-slate-200 hover:bg-slate-50'
                             }`}
                           >
-                            <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0 space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-semibold text-sm text-slate-900">{oc.titulo}</span>
+                                <span className="font-semibold text-xs text-slate-900 truncate max-w-[200px] sm:max-w-none">
+                                  {oc.titulo}
+                                </span>
                                 {oc.urgencia === 'Alta' && (
-                                  <Badge variant="destructive" className="bg-rose-100 text-rose-700 border-rose-200 text-[10px] font-bold py-0">
-                                    Alta Prioridade
-                                  </Badge>
+                                  <span className="text-[10px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded">
+                                    Alta
+                                  </span>
                                 )}
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${stCfg.bgClass} ${stCfg.textClass} ${stCfg.borderClass}`}>
+                                  {stCfg.label}
+                                </span>
                               </div>
-                              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium border ${stCfg.bgClass} ${stCfg.textClass} ${stCfg.borderClass}`}>
-                                {stCfg.label}
-                              </span>
+                              <p className="text-[11px] text-slate-500">
+                                {oc.unidadeNome || 'Geral'} • {oc.autorNome || 'Morador'}
+                              </p>
                             </div>
 
-                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
-                              <div className="text-slate-500 flex items-center gap-1.5">
-                                <span className="font-medium text-slate-700">{oc.unidadeNome || 'Geral'}</span>
-                                <span>•</span>
-                                <span>{oc.autorNome || 'Morador'}</span>
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => abrirOcorrenciaDireta(oc)}
-                                className={`h-7 px-2.5 text-xs font-semibold cursor-pointer ${
-                                  precisaValidacao
-                                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                                }`}
-                              >
-                                {precisaValidacao ? 'Validar & Fechar' : 'Ver Trilha & Despachar'}
-                              </Button>
-                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => abrirOcorrenciaDireta(oc)}
+                              className={`h-7 px-2.5 text-xs font-medium shrink-0 cursor-pointer ${
+                                precisaValidacao
+                                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                              }`}
+                            >
+                              {precisaValidacao ? 'Validar' : 'Ver'}
+                            </Button>
                           </div>
                         );
                       })}
@@ -1149,10 +1113,10 @@ export default function SindicaView() {
                   )}
                 </div>
 
-                {/* Coluna Direita (5 colunas): Mural Recente & Mini QR Code */}
-                <div className="lg:col-span-5 space-y-5">
+                {/* Coluna Direita: Mural & Acesso Rápido */}
+                <div className="lg:col-span-5 space-y-4">
                   {/* Card Mural */}
-                  <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-3">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Megaphone className="h-4 w-4 text-indigo-600" />
@@ -1162,19 +1126,19 @@ export default function SindicaView() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setActiveTab('mural')}
-                        className="text-xs font-semibold text-indigo-600 hover:bg-indigo-50 h-7 px-2 cursor-pointer"
+                        className="text-xs font-medium text-indigo-600 hover:text-indigo-800 h-8 px-2 cursor-pointer"
                       >
-                        Abrir Mural ({avisos.length}) <ArrowRight className="h-3 w-3 ml-1" />
+                        Mural ({avisos.length}) <ArrowRight className="h-3 w-3 ml-1" />
                       </Button>
                     </div>
 
                     {ultimoAviso ? (
-                      <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
+                      <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px]">
                           <Badge variant="outline" className="text-[10px] font-semibold bg-white">
                             {ultimoAviso.categoria || 'Geral'}
                           </Badge>
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-slate-400">
                             {formatarDataHora(ultimoAviso.createdAt)}
                           </span>
                         </div>
@@ -1185,88 +1149,112 @@ export default function SindicaView() {
                       </div>
                     ) : (
                       <div className="p-4 bg-slate-50 rounded-xl text-center text-slate-400 text-xs space-y-2">
-                        <p>Nenhum aviso publicado ainda no mural.</p>
+                        <p>Nenhum comunicado publicado ainda.</p>
                         <Button
                           size="sm"
                           onClick={openNovoAviso}
                           className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
                         >
-                          Criar Primeiro Comunicado
+                          Publicar Comunicado
                         </Button>
                       </div>
                     )}
                   </div>
 
+                  {/* Card Atalho Convite & QR */}
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-slate-900">Convite aos Moradores</p>
+                      <p className="text-[11px] text-slate-500">QR Code pronto para mural e portaria.</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setActiveTab('qrcode')}
+                      className="text-xs font-medium border-slate-200 text-slate-700 hover:bg-slate-50 h-8 cursor-pointer"
+                    >
+                      <QrCode className="h-3.5 w-3.5 mr-1 text-slate-500" /> Ver QR Code
+                    </Button>
+                  </div>
                 </div>
               </div>
             </TabsContent>
 
-            {/* Tab 1: Fila de Aprovações */}
+            {/* Tab: Fila de Aprovações */}
             <TabsContent value="aprovacoes" className="mt-4">
               <Card className="border-0 shadow-sm">
-                <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-row items-center justify-between">
+                <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <CardTitle className="text-lg font-bold text-slate-800">Fila de Liberação de Acesso</CardTitle>
-                    <CardDescription>
-                      Moradores que solicitaram acesso e aguardam confirmação de unidade pela administração.
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                        Fila de Liberação de Acesso
+                      </CardTitle>
+                      <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                        {pendingUsers.length === 0 ? 'Nenhuma pendência' : `${pendingUsers.length} morador(es) aguardando`}
+                      </span>
+                    </div>
+                    <CardDescription className="text-xs text-slate-500 mt-1">
+                      Cadastros de moradores que aguardam confirmação para acessar a plataforma.
                     </CardDescription>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={loadAllData}>
-                    <RefreshCw className="h-4 w-4 text-slate-500" />
+                  <Button variant="ghost" size="sm" onClick={loadAllData} className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer self-end sm:self-auto">
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Atualizar
                   </Button>
                 </CardHeader>
                 <CardContent className="p-0 bg-white rounded-b-xl">
                   {pendingUsers.length === 0 ? (
-                    <div className="p-10 text-center text-slate-400 space-y-2">
+                    <div className="p-12 text-center text-slate-400 space-y-2">
                       <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
-                      <p className="font-semibold text-slate-700">Tudo liberado!</p>
-                      <p className="text-sm">Não há nenhum morador pendente de aprovação.</p>
+                      <p className="font-semibold text-slate-700">Fila em dia</p>
+                      <p className="text-xs text-slate-500">Nenhum morador aguardando liberação de acesso no momento.</p>
                     </div>
                   ) : (
-                    <Table>
-                      <TableHeader className="bg-slate-50">
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Apartamento Requisitado</TableHead>
-                          <TableHead className="text-right">Ação</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pendingUsers.map((u) => (
-                          <TableRow key={u.id} className="hover:bg-slate-50/60">
-                            <TableCell className="font-semibold text-slate-800">{u.nome || 'Não informado'}</TableCell>
-                            <TableCell className="text-slate-600 text-sm">{u.email}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="bg-indigo-50 border-indigo-200 text-indigo-700 font-medium">
-                                {u.unidadeNome || `Unidade ${u.unidadeId || 'N/A'}`}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right space-x-2">
-                              <Button
-                                size="sm"
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                                disabled={actionLoading === u.id}
-                                onClick={() => handleApprove(u.id)}
-                              >
-                                <UserCheck className="h-3.5 w-3.5 mr-1" />
-                                {actionLoading === u.id ? 'Aprovando...' : 'Aprovar'}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer"
-                                disabled={actionLoading === u.id}
-                                onClick={() => setRejectingMorador(u)}
-                              >
-                                <UserX className="h-3.5 w-3.5 mr-1" />
-                                Recusar
-                              </Button>
-                            </TableCell>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader className="bg-slate-50">
+                          <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>E-mail</TableHead>
+                            <TableHead>Apartamento Requisitado</TableHead>
+                            <TableHead className="text-right">Ação</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {pendingUsers.map((u) => (
+                            <TableRow key={u.id} className="hover:bg-slate-50/60">
+                              <TableCell className="font-semibold text-slate-800 text-sm">{u.nome || 'Não informado'}</TableCell>
+                              <TableCell className="text-slate-600 text-xs">{u.email}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="bg-indigo-50 border-indigo-200 text-indigo-700 font-medium text-xs">
+                                  {u.unidadeNome || `Unidade ${u.unidadeId || 'N/A'}`}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right space-x-2">
+                                <Button
+                                  size="sm"
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 px-3 rounded-lg cursor-pointer"
+                                  disabled={actionLoading === u.id}
+                                  onClick={() => handleApprove(u.id)}
+                                >
+                                  <UserCheck className="h-3.5 w-3.5 mr-1" />
+                                  {actionLoading === u.id ? 'Aprovando...' : 'Aprovar'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-rose-600 border-rose-200 hover:bg-rose-50 text-xs h-8 px-3 rounded-lg cursor-pointer"
+                                  disabled={actionLoading === u.id}
+                                  onClick={() => setRejectingMorador(u)}
+                                >
+                                  <UserX className="h-3.5 w-3.5 mr-1" />
+                                  Recusar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1307,37 +1295,22 @@ export default function SindicaView() {
                 />
               ) : (
                 <>
-                  {/* Mini cards de métricas de unidades */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-                      <p className="text-xs text-slate-500 font-medium">Total de Unidades</p>
-                      <p className="text-2xl font-bold text-slate-800 mt-0.5">{unitStats.total}</p>
-                    </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-                  <p className="text-xs text-slate-500 font-medium">Torres / Blocos</p>
-                  <p className="text-2xl font-bold text-indigo-700 mt-0.5">{unitStats.totalTorres}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-                  <p className="text-xs text-slate-500 font-medium">Unidades Ocupadas</p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-0.5">{unitStats.ocupadas}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-                  <p className="text-xs text-slate-500 font-medium">Unidades Vagas</p>
-                  <p className="text-2xl font-bold text-slate-600 mt-0.5">{unitStats.vagas}</p>
-                </div>
-              </div>
-
-              {/* Card principal com barra de ações e tabela */}
-              <Card className="border-0 shadow-sm">
-                <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-lg font-bold text-slate-800">
-                      Mapa e Gestão de Unidades
-                    </CardTitle>
-                    <CardDescription>
-                      Adicione unidades avulsas, edite dados de apartamentos ou reconfigure a estrutura predial.
-                    </CardDescription>
-                  </div>
+                  {/* Card principal com barra de ações e tabela */}
+                  <Card className="border-0 shadow-sm">
+                    <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                            Unidades do Condomínio
+                          </CardTitle>
+                          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                            {unitStats.total} unidades • {unitStats.ocupadas} ocupadas ({unitStats.total > 0 ? Math.round((unitStats.ocupadas / unitStats.total) * 100) : 0}%) • {unitStats.vagas} vagas
+                          </span>
+                        </div>
+                        <CardDescription className="text-xs text-slate-500 mt-1">
+                          Gerencie os apartamentos cadastrados, renomeie blocos ou adicione novas unidades.
+                        </CardDescription>
+                      </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       size="sm"
@@ -1543,42 +1516,53 @@ export default function SindicaView() {
             />
           ) : (
             <>
-              {/* Mini cards de métricas de atendimento */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-                  <p className="text-xs text-slate-500 font-medium">Pendentes</p>
-                  <p className="text-2xl font-bold text-amber-600 mt-0.5">{ocorrenciasStats.pendentes}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-                  <p className="text-xs text-slate-500 font-medium">Em Atendimento</p>
-                  <p className="text-2xl font-bold text-blue-600 mt-0.5">{ocorrenciasStats.emAtendimento}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-                  <p className="text-xs text-slate-500 font-medium">Aguardando Validação</p>
-                  <p className="text-2xl font-bold text-purple-600 mt-0.5">{ocorrenciasStats.aguardandoValidacao}</p>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-                  <p className="text-xs text-slate-500 font-medium">Resolvidos</p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-0.5">{ocorrenciasStats.resolvidas}</p>
-                </div>
-              </div>
-
               {/* Card principal com lista limpa e filtros */}
               <Card className="border-0 shadow-sm">
                 <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <CardTitle className="text-lg font-bold text-slate-800">Livro de Ocorrências e Atendimentos</CardTitle>
-                    <CardDescription>
-                      Acompanhe, despache para portaria ou zeladoria e homologue o encerramento dos chamados.
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                        Ocorrências e Atendimentos
+                      </CardTitle>
+                      <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                        {ocorrencias.length} no total • {ocorrenciasStats.pendentes + ocorrenciasStats.emAtendimento} em andamento
+                      </span>
+                    </div>
+                    <CardDescription className="text-xs text-slate-500 mt-1">
+                      Acompanhe e despache os chamados abertos pelos moradores ou portaria.
                     </CardDescription>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={loadAllData} className="self-end md:self-auto">
-                    <RefreshCw className="h-4 w-4 text-slate-500" />
+                  <Button variant="ghost" size="sm" onClick={loadAllData} className="self-end md:self-auto text-xs text-slate-500 hover:text-slate-800 cursor-pointer">
+                    <RefreshCw className="h-3.5 w-3.5 mr-1" /> Atualizar
                   </Button>
                 </CardHeader>
 
                 <CardContent className="p-4 bg-white rounded-b-xl space-y-4">
-                  {/* Barra de Filtro e Busca Rápida */}
+                  {/* Pills de Filtro de Status com Contadores Integrados */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                    {[
+                      { id: 'all', label: `Todas (${ocorrencias.length})` },
+                      { id: 'Pendente', label: `Pendentes (${ocorrenciasStats.pendentes})` },
+                      { id: 'Em Atendimento', label: `Em Atendimento (${ocorrenciasStats.emAtendimento})` },
+                      { id: 'Aguardando Validação da Síndica', label: `Aguardando Validação (${ocorrenciasStats.aguardandoValidacao})` },
+                      { id: 'Resolvido', label: `Resolvidos (${ocorrenciasStats.resolvidas})` },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setOcorrenciaStatusFilter(tab.id)}
+                        className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer text-xs ${
+                          ocorrenciaStatusFilter === tab.id
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Barra de Busca e Responsável */}
                   <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                     <div className="relative w-full sm:w-80">
                       <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1586,29 +1570,16 @@ export default function SindicaView() {
                         placeholder="Buscar por chamado, morador ou unidade..."
                         value={ocorrenciaSearch}
                         onChange={(e) => setOcorrenciaSearch(e.target.value)}
-                        className="pl-9 text-sm"
+                        className="pl-9 text-sm h-10 border-slate-200 rounded-xl"
                       />
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                      {/* Filtro de Status */}
-                      <select
-                        value={ocorrenciaStatusFilter}
-                        onChange={(e) => setOcorrenciaStatusFilter(e.target.value)}
-                        className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-700 shadow-2xs cursor-pointer"
-                      >
-                        <option value="all">Todos os Status ({ocorrencias.length})</option>
-                        <option value="Pendente">Pendentes</option>
-                        <option value="Em Atendimento">Em Atendimento</option>
-                        <option value="Aguardando Validação da Síndica">Aguardando Validação</option>
-                        <option value="Resolvido">Resolvidos</option>
-                      </select>
-
-                      {/* Filtro de Responsável */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <Label className="text-xs text-slate-500 whitespace-nowrap">Responsável:</Label>
                       <select
                         value={ocorrenciaRespFilter}
                         onChange={(e) => setOcorrenciaRespFilter(e.target.value)}
-                        className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white font-medium text-slate-700 shadow-2xs cursor-pointer"
+                        className="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-white font-medium text-slate-700 shadow-xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="all">Todos os Responsáveis</option>
                         <option value="Síndica">Síndica / Adm</option>
@@ -1735,17 +1706,22 @@ export default function SindicaView() {
                 <Card className="border-0 shadow-sm">
                   <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Megaphone className="h-5 w-5 text-indigo-600" /> Mural de Avisos e Comunicados
-                      </CardTitle>
-                      <CardDescription>
-                        Gerencie comunicados oficiais do condomínio com segmentação por bloco e assistência inteligente de tom.
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                          Mural de Comunicados
+                        </CardTitle>
+                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                          {avisosStats.total} avisos • {avisosStats.gerais} gerais • {avisosStats.blocos} por bloco
+                        </span>
+                      </div>
+                      <CardDescription className="text-xs text-slate-500 mt-1">
+                        Publique avisos gerais ou segmentados por bloco com notificação para os moradores.
                       </CardDescription>
                     </div>
                     <Button
                       size="sm"
                       onClick={openNovoAviso}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium self-start sm:self-auto cursor-pointer"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs h-9 self-start sm:self-auto cursor-pointer"
                     >
                       <Plus className="h-4 w-4 mr-1.5" /> Novo Comunicado
                     </Button>
@@ -1754,12 +1730,12 @@ export default function SindicaView() {
                     {/* Barra de Filtros e Métricas do Mural */}
                     <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                       <div className="relative flex-1 max-w-md">
-                        <Search className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+                        <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                           placeholder="Buscar no mural por título, mensagem ou bloco..."
                           value={searchAviso}
                           onChange={(e) => setSearchAviso(e.target.value)}
-                          className="pl-9 text-xs h-9 bg-slate-50/70 border-slate-200"
+                          className="pl-9 text-sm h-10 border-slate-200 rounded-xl"
                         />
                       </div>
 
@@ -1767,7 +1743,7 @@ export default function SindicaView() {
                         <select
                           value={filterAvisoCategoria}
                           onChange={(e) => setFilterAvisoCategoria(e.target.value)}
-                          className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                          className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-xs focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                         >
                           <option value="all">Todas as Categorias</option>
                           <option value="Geral">Geral</option>
@@ -1780,20 +1756,12 @@ export default function SindicaView() {
                         <select
                           value={filterAvisoDestinatario}
                           onChange={(e) => setFilterAvisoDestinatario(e.target.value)}
-                          className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                          className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-xs focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                         >
                           <option value="all">Todos os Públicos</option>
                           <option value="todos">Geral (Todos)</option>
                           <option value="bloco">Segmentado por Bloco</option>
                         </select>
-
-                        <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-slate-200 text-xs text-slate-500">
-                          <span className="font-medium text-slate-700">{avisosStats.total}</span> total
-                          <span className="text-slate-300">•</span>
-                          <span className="font-medium text-indigo-600">{avisosStats.gerais}</span> gerais
-                          <span className="text-slate-300">•</span>
-                          <span className="font-medium text-purple-600">{avisosStats.blocos}</span> por bloco
-                        </div>
                       </div>
                     </div>
 
@@ -1901,60 +1869,133 @@ export default function SindicaView() {
             )}
           </TabsContent>
 
-            {/* Tab: QR Code de Convite */}
+            {/* Tab: QR Code e Convites */}
             <TabsContent value="qrcode" className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-2">
-                  <CardHeader>
-                    <CardTitle>Acesso dos Moradores via QR Code</CardTitle>
-                    <CardDescription>
-                      Para afixar nos murais, portaria, elevadores ou compartilhar no grupo oficial do condomínio.
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Coluna Esquerda: Instruções e Boas Práticas */}
+                <Card className="lg:col-span-7 border-0 shadow-sm">
+                  <CardHeader className="bg-white rounded-t-xl border-b border-slate-100">
+                    <CardTitle className="text-base sm:text-lg font-bold text-slate-900">
+                      Como Funciona o Convite de Moradores
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500 mt-1">
+                      Orientações para disponibilizar o cadastro de condôminos de forma rápida e segura.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4 text-sm text-slate-600">
-                    <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-2">
-                      <p className="font-semibold text-indigo-900">Privacidade & Conformidade LGPD:</p>
-                      <p className="text-xs text-indigo-700 leading-relaxed">
-                        Os moradores não precisam fornecer CPF nem dados sensíveis. Ao escanear o QR Code, eles apenas informam Nome, E-mail, Senha e selecionam o Apartamento. A liberação só ocorre após o seu clique na aba <strong>Aprovações</strong>.
+                  <CardContent className="p-5 bg-white rounded-b-xl space-y-4 text-sm text-slate-600">
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                        <div className="h-6 w-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          1
+                        </div>
+                        <div className="text-xs space-y-0.5">
+                          <p className="font-semibold text-slate-800">Afixe ou envie o convite</p>
+                          <p className="text-slate-500 leading-relaxed">
+                            Imprima o QR Code para colocar no mural do elevador e portaria, ou copie o link direto para enviar no grupo oficial de moradores.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                        <div className="h-6 w-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          2
+                        </div>
+                        <div className="text-xs space-y-0.5">
+                          <p className="font-semibold text-slate-800">Cadastro sem atrito</p>
+                          <p className="text-slate-500 leading-relaxed">
+                            O morador aponta a câmera do celular, digita seu nome, e-mail e seleciona o apartamento. Não há solicitação de documentos ou dados invasivos.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                        <div className="h-6 w-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                          3
+                        </div>
+                        <div className="text-xs space-y-0.5">
+                          <p className="font-semibold text-slate-800">Liberação pela administração</p>
+                          <p className="text-slate-500 leading-relaxed">
+                            A solicitação vai direto para a aba <strong>Aprovações</strong>. Você valida a unidade e libera o acesso com um clique.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 bg-indigo-50/60 rounded-xl border border-indigo-100/80 text-xs text-indigo-900 space-y-1">
+                      <p className="font-semibold">Privacidade e Segurança (LGPD)</p>
+                      <p className="text-indigo-700 leading-relaxed">
+                        Nenhum dado desnecessário é exigido no cadastro. Nenhum morador acessa o sistema sem a sua autorização formal.
                       </p>
+                    </div>
+
+                    <div className="pt-2 flex flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const msg = `Olá! Para acessar o sistema do condomínio ${condo?.nome || ''}, use o link de cadastro: ${moradorLink} ou o código de convite: ${condo?.codigoConviteMorador || ''}`;
+                          copyToClipboard(msg, 'whatsapp-msg');
+                        }}
+                        className="text-xs border-slate-200 text-slate-700 hover:bg-slate-50 h-9 rounded-xl cursor-pointer"
+                      >
+                        {copiedField === 'whatsapp-msg' ? (
+                          <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-600" /> Mensagem Copiada!</>
+                        ) : (
+                          <><Copy className="mr-1.5 h-3.5 w-3.5 text-slate-500" /> Copiar Mensagem para WhatsApp</>
+                        )}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Bloco QR */}
-                <Card className="flex flex-col items-center text-center p-4 shadow-sm">
-                  <CardHeader className="p-2 pb-3">
-                    <CardTitle className="text-base flex items-center gap-1.5">
-                      <Megaphone className="h-4 w-4 text-indigo-600" /> QR Code Moradores
+                {/* Coluna Direita: Bloco do QR Code */}
+                <Card className="lg:col-span-5 border-0 shadow-sm flex flex-col items-center text-center">
+                  <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 w-full p-4">
+                    <CardTitle className="text-base font-bold text-slate-900 flex items-center justify-center gap-1.5">
+                      <QrCode className="h-4 w-4 text-indigo-600" /> QR Code de Acesso
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col items-center space-y-3 w-full p-0">
-                    <div className="bg-white p-3 rounded-xl border shadow-sm">
-                      <QRCodeSVG value={moradorLink} size={150} />
+                  <CardContent className="flex flex-col items-center space-y-4 w-full p-5 bg-white rounded-b-xl">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                      <QRCodeSVG value={moradorLink} size={160} />
                     </div>
-                    <div className="font-mono text-xs bg-slate-100 px-3 py-1 rounded text-slate-700">
-                      Código Mural: <strong>{condo?.codigoConviteMorador}</strong>
+
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-mono">
+                      <span className="text-slate-400 font-sans">Código do Mural:</span>
+                      <strong className="text-slate-900">{condo?.codigoConviteMorador}</strong>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(condo?.codigoConviteMorador || '', 'mural-code')}
+                        className="text-slate-400 hover:text-indigo-600 p-0.5 rounded cursor-pointer"
+                        title="Copiar código"
+                        aria-label="Copiar código"
+                      >
+                        {copiedField === 'mural-code' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={() => copyToClipboard(moradorLink, 'morador')}
-                    >
-                      {copiedField === 'morador' ? (
-                        <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-600" /> Link Copiado!</>
-                      ) : (
-                        <><Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar Link de Convite</>
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs text-slate-500 hover:text-indigo-600 cursor-pointer"
-                      onClick={() => setRotateQrModalOpen(true)}
-                    >
-                      <RefreshCw className="mr-1.5 h-3 w-3" /> Gerar novo código
-                    </Button>
+
+                    <div className="w-full space-y-2">
+                      <Button
+                        size="sm"
+                        className="w-full text-xs h-9 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl cursor-pointer"
+                        onClick={() => copyToClipboard(moradorLink, 'morador')}
+                      >
+                        {copiedField === 'morador' ? (
+                          <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-300" /> Link de Convite Copiado!</>
+                        ) : (
+                          <><Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar Link de Convite</>
+                        )}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-xs text-slate-500 hover:text-indigo-600 cursor-pointer h-8"
+                        onClick={() => setRotateQrModalOpen(true)}
+                      >
+                        <RefreshCw className="mr-1.5 h-3 w-3" /> Gerar novo código de segurança
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -1974,95 +2015,71 @@ export default function SindicaView() {
                 <Card className="border-0 shadow-sm">
                   <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Users className="h-5 w-5 text-indigo-600" /> Gestão Completa de Moradores
-                      </CardTitle>
-                      <CardDescription>
-                        Controle de acesso, histórico, vinculação de apartamentos e status de cada residente do condomínio.
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CardTitle className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                          <Users className="h-5 w-5 text-indigo-600" /> Moradores do Condomínio
+                        </CardTitle>
+                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                          {moradoresStats.total} cadastrados • {moradoresStats.ativos} ativos
+                          {moradoresStats.pendentes > 0 && ` • ${moradoresStats.pendentes} aguardando validação`}
+                        </span>
+                      </div>
+                      <CardDescription className="text-xs text-slate-500 mt-1">
+                        Consulte os moradores cadastrados, ajuste unidades e altere permissões de acesso.
                       </CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 bg-white rounded-b-xl space-y-4">
-                    {/* Cards de Métricas dos Moradores */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                        <div>
-                          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Cadastrado</p>
-                          <p className="text-xl font-bold text-slate-900 mt-0.5">{moradoresStats.total}</p>
-                        </div>
-                        <div className="h-9 w-9 rounded-lg bg-slate-200/80 text-slate-700 flex items-center justify-center">
-                          <Users className="h-4 w-4" />
-                        </div>
-                      </div>
-
-                      <div className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl flex items-center justify-between">
-                        <div>
-                          <p className="text-[11px] font-medium text-emerald-700 uppercase tracking-wider">Acesso Ativo</p>
-                          <p className="text-xl font-bold text-emerald-800 mt-0.5">{moradoresStats.ativos}</p>
-                        </div>
-                        <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                          <UserCheck className="h-4 w-4" />
-                        </div>
-                      </div>
-
-                      <div className="p-3 bg-amber-50/50 border border-amber-200 rounded-xl flex items-center justify-between">
-                        <div>
-                          <p className="text-[11px] font-medium text-amber-700 uppercase tracking-wider">Aguardando Validação</p>
-                          <p className="text-xl font-bold text-amber-800 mt-0.5">{moradoresStats.pendentes}</p>
-                        </div>
-                        <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
-                          <Clock className="h-4 w-4" />
-                        </div>
-                      </div>
-
-                      <div className="p-3 bg-rose-50/50 border border-rose-200 rounded-xl flex items-center justify-between">
-                        <div>
-                          <p className="text-[11px] font-medium text-rose-700 uppercase tracking-wider">Inativo / Suspenso</p>
-                          <p className="text-xl font-bold text-rose-800 mt-0.5">{moradoresStats.inativos}</p>
-                        </div>
-                        <div className="h-9 w-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center">
-                          <UserX className="h-4 w-4" />
-                        </div>
-                      </div>
+                    {/* Pills de Filtro de Status com Contadores Integrados */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+                      {[
+                        { id: 'all', label: `Todos (${moradoresStats.total})` },
+                        { id: 'ativo', label: `Ativos (${moradoresStats.ativos})` },
+                        { id: 'pendente', label: `Aguardando (${moradoresStats.pendentes})` },
+                        { id: 'inativo', label: `Inativos (${moradoresStats.inativos})` },
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setFilterMoradorStatus(tab.id)}
+                          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer text-xs ${
+                            filterMoradorStatus === tab.id
+                              ? 'bg-indigo-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
                     </div>
 
                     {/* Barra de Filtros e Busca */}
-                    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-2">
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                       <div className="relative flex-1 max-w-md">
-                        <Search className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+                        <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                           placeholder="Buscar por nome, e-mail, telefone ou apartamento..."
                           value={searchMorador}
                           onChange={(e) => setSearchMorador(e.target.value)}
-                          className="pl-9 text-xs h-9 bg-slate-50/70 border-slate-200"
+                          className="pl-9 text-sm h-10 border-slate-200 rounded-xl"
                         />
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <select
-                          value={filterMoradorStatus}
-                          onChange={(e) => setFilterMoradorStatus(e.target.value)}
-                          className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                        >
-                          <option value="all">Todos os Status</option>
-                          <option value="ativo">Apenas Ativos</option>
-                          <option value="pendente">Apenas Pendentes</option>
-                          <option value="inativo">Apenas Inativos</option>
-                        </select>
-
-                        {availableTorres.length > 0 && (
+                      {availableTorres.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs text-slate-500 whitespace-nowrap">Filtrar Bloco:</Label>
                           <select
                             value={filterMoradorTorre}
                             onChange={(e) => setFilterMoradorTorre(e.target.value)}
-                            className="h-9 px-2.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                            className="h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-xs focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                           >
                             <option value="all">Todas as Torres/Blocos</option>
                             {availableTorres.map((t) => (
                               <option key={t} value={t}>{t}</option>
                             ))}
                           </select>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Tabela de Moradores */}

@@ -1,19 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { formatUnitName, filterUnits, groupUnitsByFloor, type UnitData } from '@/lib/unit-helpers';
 import {
   Building2,
   Search,
   Check,
-  ChevronDown,
-  ChevronUp,
   X,
   Edit3,
   Layers,
-  Info
+  ChevronRight,
+  RotateCcw
 } from 'lucide-react';
 
 export type UnitItem = UnitData & { id: string };
@@ -45,7 +43,25 @@ export function UnitSelector({
   const [search, setSearch] = useState('');
   const [activeTorre, setActiveTorre] = useState<string>('all');
 
-  // Encontra unidade selecionada na lista
+  // Fecha modal com Escape e trava scroll do body
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
+  // Unidade atualmente selecionada
   const selectedUnit = useMemo(() => {
     return unidades.find((u) => u.id === selectedId);
   }, [unidades, selectedId]);
@@ -59,12 +75,12 @@ export function UnitSelector({
     return Array.from(set).sort();
   }, [unidades]);
 
-  // Filtragem das unidades por pesquisa e por torre
+  // Filtragem das unidades
   const filteredUnidades = useMemo(() => {
     return filterUnits(unidades, search, activeTorre) as UnitItem[];
   }, [unidades, search, activeTorre]);
 
-  // Agrupamento por andar para exibição estruturada
+  // Agrupamento por andar
   const groupedByAndar = useMemo(() => {
     return groupUnitsByFloor(filteredUnidades) as { andar: string; itens: UnitItem[] }[];
   }, [filteredUnidades]);
@@ -76,51 +92,43 @@ export function UnitSelector({
     onManualModeChange(false);
   };
 
-  // Se o condomínio não tiver unidades mapeadas
+  // Se o condomínio não tem unidades cadastradas, exibe campos diretos e limpos
   if (unidades.length === 0) {
     return (
-      <div className="space-y-3 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
-        <div className="flex items-start gap-2.5 text-indigo-900">
-          <Info className="h-5 w-5 text-indigo-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold">Identificação da sua Unidade</p>
-            <p className="text-xs text-indigo-700 leading-relaxed mt-0.5">
-              O condomínio ainda não possui um mapa predial pré-carregado. Informe o número da sua unidade abaixo para solicitar a liberação.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div className="space-y-1.5">
+      <div className="space-y-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+        <p className="text-xs text-slate-600 leading-relaxed">
+          Informe os dados da sua residência para solicitar liberação de acesso:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
             <Label htmlFor="manualTorre" className="text-xs font-medium text-slate-700">
-              Torre ou Bloco (Opcional)
+              Torre / Bloco <span className="text-slate-400 font-normal">(opcional)</span>
             </Label>
             <Input
               id="manualTorre"
-              placeholder="Ex: Bloco B, Torre 1"
+              placeholder="Ex: Bloco B"
               value={manualTorre}
               onChange={(e) => {
                 onManualTorreChange(e.target.value);
                 onManualModeChange(true);
               }}
-              className="bg-white border-slate-300 text-sm"
+              className="h-10 bg-white border-slate-200 rounded-lg text-sm"
             />
           </div>
-
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label htmlFor="manualNumero" className="text-xs font-medium text-slate-700">
-              Número do Apartamento *
+              Apartamento <span className="text-rose-500">*</span>
             </Label>
             <Input
               id="manualNumero"
-              placeholder="Ex: 302, 12, Cobertura"
+              placeholder="Ex: 302"
               required
               value={manualNumero}
               onChange={(e) => {
                 onManualNumeroChange(e.target.value);
                 onManualModeChange(true);
               }}
-              className="bg-white border-slate-300 text-sm"
+              className="h-10 bg-white border-slate-200 rounded-lg text-sm"
             />
           </div>
         </div>
@@ -128,42 +136,41 @@ export function UnitSelector({
     );
   }
 
-  // Se estiver no modo manual (escolhido pelo usuário como alternativa)
+  // Modo manual escolhido pelo morador
   if (manualMode) {
     return (
-      <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+      <div className="space-y-3 p-3.5 bg-slate-50/80 rounded-xl border border-slate-200 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-            <Edit3 className="h-4 w-4 text-indigo-600" /> Preenchimento Manual da Unidade
+            <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
+            Digitação manual da unidade
           </span>
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
-            className="text-xs text-indigo-600 hover:text-indigo-800 h-7"
             onClick={() => onManualModeChange(false)}
+            className="text-xs font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors"
           >
-            Voltar para a lista do condomínio
-          </Button>
+            <RotateCcw className="w-3 h-3" />
+            Escolher na lista
+          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label htmlFor="manualTorre" className="text-xs font-medium text-slate-700">
-              Torre / Bloco (Opcional)
+              Torre / Bloco <span className="text-slate-400 font-normal">(opcional)</span>
             </Label>
             <Input
               id="manualTorre"
               placeholder="Ex: Bloco B"
               value={manualTorre}
               onChange={(e) => onManualTorreChange(e.target.value)}
-              className="bg-white border-slate-300 text-sm"
+              className="h-10 bg-white border-slate-200 rounded-lg text-sm"
             />
           </div>
-
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <Label htmlFor="manualNumero" className="text-xs font-medium text-slate-700">
-              Número do Apartamento *
+              Apartamento <span className="text-rose-500">*</span>
             </Label>
             <Input
               id="manualNumero"
@@ -171,7 +178,7 @@ export function UnitSelector({
               required
               value={manualNumero}
               onChange={(e) => onManualNumeroChange(e.target.value)}
-              className="bg-white border-slate-300 text-sm"
+              className="h-10 bg-white border-slate-200 rounded-lg text-sm"
             />
           </div>
         </div>
@@ -180,212 +187,247 @@ export function UnitSelector({
   }
 
   return (
-    <div className="space-y-2">
-      {/* Botão Gatilho / Card da Unidade Selecionada */}
+    <div className="space-y-1.5">
+      {/* Visualização do Campo: Selecionado vs Não Selecionado */}
       {selectedUnit ? (
-        <div className="p-3.5 bg-indigo-50/60 rounded-xl border border-indigo-200 flex items-center justify-between transition-all">
+        <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-200/90 flex items-center justify-between transition-all">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm">
-              <Building2 className="h-5 w-5" />
+            <div className="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+              <Building2 className="w-4.5 h-4.5" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-slate-900 text-base">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-slate-900 text-sm">
                   Apto {selectedUnit.numero}
                 </span>
-                <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200 text-xs font-semibold">
-                  <Check className="h-3 w-3 mr-0.5" /> Selecionado
-                </Badge>
+                <span className="text-[11px] font-medium text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                  <Check className="w-3 h-3" /> Selecionado
+                </span>
               </div>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-500">
                 {selectedUnit.torre ? `${selectedUnit.torre} • ` : ''}
                 {selectedUnit.andar ? `${selectedUnit.andar}º andar` : 'Unidade residencial'}
               </p>
             </div>
           </div>
 
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsOpen(!isOpen)}
-            className="border-indigo-200 text-indigo-700 hover:bg-indigo-100/50 text-xs h-9"
+            onClick={() => setIsOpen(true)}
+            className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-100/60 border border-indigo-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
           >
-            {isOpen ? 'Fechar mapa' : 'Alterar unidade'}
-          </Button>
+            Trocar
+          </button>
         </div>
       ) : (
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className={`w-full p-4 rounded-xl border-2 transition-all flex items-center justify-between text-left ${
-            isOpen
-              ? 'border-indigo-600 bg-indigo-50/30 ring-2 ring-indigo-500/20'
-              : 'border-dashed border-slate-300 bg-slate-50 hover:bg-indigo-50/40 hover:border-indigo-300'
-          }`}
+          onClick={() => setIsOpen(true)}
+          className="w-full h-11 px-3.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-slate-50/50 hover:bg-white text-left flex items-center justify-between transition-all cursor-pointer group"
         >
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-800">
-                Selecione seu Apartamento
-              </p>
-              <p className="text-xs text-slate-500">
-                Clique para visualizar o mapa de unidades do condomínio
-              </p>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <Building2 className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+            <span className="text-sm text-slate-500 group-hover:text-slate-700 transition-colors">
+              Toque para escolher seu apartamento...
+            </span>
           </div>
-          <div className="text-slate-400 pr-1">
-            {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-          </div>
+          <span className="text-xs font-medium text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100 px-2 py-1 rounded-md transition-colors flex items-center gap-1">
+            Escolher <ChevronRight className="w-3.5 h-3.5" />
+          </span>
         </button>
       )}
 
-      {/* Painel do Seletor Interativo */}
-      {isOpen && (
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-md space-y-4 animate-in fade-in-50 duration-150">
-          {/* Barra de Pesquisa Rápida */}
-          <div className="relative">
-            <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Digite o número (ex: 201) ou bloco..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-8 bg-slate-50 border-slate-200 text-sm focus:bg-white"
-              autoFocus
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+      {/* Opção discreta para digitação manual */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => onManualModeChange(true)}
+          className="text-[11px] text-slate-400 hover:text-indigo-600 transition-colors"
+        >
+          Não encontrou seu apartamento? Digitar manualmente
+        </button>
+      </div>
 
-          {/* Abas / Filtro de Torres (se houver mais de uma torre) */}
-          {torres.length > 1 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+      {/* DIÁLOGO MODAL: Escolha Rápida e Focada */}
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0 duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsOpen(false);
+          }}
+        >
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150">
+            {/* Header do Modal */}
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 id="modal-title" className="text-base font-bold text-slate-900">
+                    Escolha seu Apartamento
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {unidades.length} unidades cadastradas no condomínio
+                  </p>
+                </div>
+              </div>
+
               <button
                 type="button"
-                onClick={() => setActiveTorre('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
-                  activeTorre === 'all'
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                onClick={() => setIsOpen(false)}
+                aria-label="Fechar"
+                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
               >
-                Todas as Torres ({unidades.length})
+                <X className="w-4 h-4" />
               </button>
-              {torres.map((t) => {
-                const count = unidades.filter((u) => u.torre === t).length;
-                return (
+            </div>
+
+            {/* Barra de Pesquisa */}
+            <div className="p-4 pb-2 space-y-3 border-b border-slate-100 bg-white">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar pelo número (ex: 201) ou bloco..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 pr-8 h-10 bg-slate-50 border-slate-200 rounded-xl text-sm focus:bg-white"
+                  autoFocus
+                />
+                {search && (
                   <button
-                    key={t}
                     type="button"
-                    onClick={() => setActiveTorre(t)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors min-h-[36px] ${
-                      activeTorre === t
+                    onClick={() => setSearch('')}
+                    aria-label="Limpar busca"
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Filtro por Torres / Blocos */}
+              {torres.length > 1 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTorre('all')}
+                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors min-h-[32px] cursor-pointer ${
+                      activeTorre === 'all'
                         ? 'bg-indigo-600 text-white shadow-sm'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    {t} ({count})
+                    Todas ({unidades.length})
                   </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Lista de Unidades Agrupadas por Andar */}
-          <div className="max-h-64 overflow-y-auto space-y-4 pr-1">
-            {groupedByAndar.length === 0 ? (
-              <div className="py-8 text-center space-y-2">
-                <p className="text-sm font-medium text-slate-600">
-                  Nenhum apartamento encontrado para "{search}"
-                </p>
-                <p className="text-xs text-slate-400">
-                  Verifique a digitação ou informe sua unidade manualmente.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onManualModeChange(true);
-                    setIsOpen(false);
-                  }}
-                  className="mt-2 text-xs"
-                >
-                  Informar manualmente
-                </Button>
-              </div>
-            ) : (
-              groupedByAndar.map((grupo) => (
-                <div key={grupo.andar} className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider sticky top-0 bg-white py-1">
-                    <Layers className="h-3.5 w-3.5 text-indigo-500" />
-                    {grupo.andar === 'Outros' ? 'Unidades' : `${grupo.andar}º Andar`}
-                    <span className="text-[10px] font-normal text-slate-400">
-                      ({grupo.itens.length} {grupo.itens.length === 1 ? 'unidade' : 'unidades'})
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                    {grupo.itens.map((u) => {
-                      const isSelected = selectedId === u.id;
-                      return (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => handleUnitClick(u)}
-                          className={`p-2 rounded-xl text-center border transition-all flex flex-col items-center justify-center min-h-[48px] active:scale-95 ${
-                            isSelected
-                              ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-bold ring-2 ring-indigo-300'
-                              : 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-indigo-50/60 hover:border-indigo-200'
-                          }`}
-                        >
-                          <span className="text-sm font-semibold">
-                            {u.numero}
-                          </span>
-                          {u.torre && activeTorre === 'all' && torres.length > 1 && (
-                            <span
-                              className={`text-[10px] truncate max-w-[70px] ${
-                                isSelected ? 'text-indigo-100' : 'text-slate-400'
-                              }`}
-                            >
-                              {u.torre}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {torres.map((t) => {
+                    const count = unidades.filter((u) => u.torre === t).length;
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setActiveTorre(t)}
+                        className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors min-h-[32px] cursor-pointer ${
+                          activeTorre === t
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {t} ({count})
+                      </button>
+                    );
+                  })}
                 </div>
-              ))
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Rodapé do Seletor */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400">
-              Total: {filteredUnidades.length} unidades encontradas
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                onManualModeChange(true);
-                setIsOpen(false);
-              }}
-              className="text-indigo-600 hover:underline font-medium"
-            >
-              Não encontrou seu apto? Digite manualmente
-            </button>
+            {/* Lista de Unidades Agrupadas por Andar */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {groupedByAndar.length === 0 ? (
+                <div className="py-12 text-center space-y-3">
+                  <p className="text-sm font-medium text-slate-600">
+                    Nenhum apartamento encontrado para "{search}"
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Você pode cadastrar o número manualmente se não estiver listado.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      onManualModeChange(true);
+                      setIsOpen(false);
+                    }}
+                    className="text-xs"
+                  >
+                    Digitar número manualmente
+                  </Button>
+                </div>
+              ) : (
+                groupedByAndar.map((grupo) => (
+                  <div key={grupo.andar} className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider sticky top-0 bg-white py-1">
+                      <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                      {grupo.andar === 'Outros' ? 'Unidades' : `${grupo.andar}º Andar`}
+                      <span className="text-[10px] font-normal text-slate-400">
+                        ({grupo.itens.length})
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {grupo.itens.map((u) => {
+                        const isSelected = selectedId === u.id;
+                        return (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => handleUnitClick(u)}
+                            className={`p-2.5 rounded-xl text-center border transition-all flex flex-col items-center justify-center min-h-[46px] cursor-pointer active:scale-95 ${
+                              isSelected
+                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-bold ring-2 ring-indigo-200'
+                                : 'bg-slate-50/70 border-slate-200 text-slate-800 hover:bg-indigo-50 hover:border-indigo-300'
+                            }`}
+                          >
+                            <span className="text-sm font-semibold">{u.numero}</span>
+                            {u.torre && activeTorre === 'all' && torres.length > 1 && (
+                              <span
+                                className={`text-[10px] truncate max-w-[80px] ${
+                                  isSelected ? 'text-indigo-100' : 'text-slate-400'
+                                }`}
+                              >
+                                {u.torre}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Rodapé do Modal */}
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-400">
+                {filteredUnidades.length} unidades encontradas
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  onManualModeChange(true);
+                  setIsOpen(false);
+                }}
+                className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline"
+              >
+                Digitar manualmente
+              </button>
+            </div>
           </div>
         </div>
       )}
