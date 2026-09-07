@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
   ArrowLeft,
-  Sparkles,
   AlertTriangle,
   Clock,
   CheckCircle2,
@@ -242,12 +241,12 @@ export function OcorrenciaTimelineJanela({
             </div>
 
             {ocorrencia.iaJustificativa && (
-              <div className="p-4 bg-indigo-50/70 border border-indigo-100 rounded-xl space-y-1.5">
-                <div className="flex items-center gap-2 text-indigo-900 font-semibold text-xs">
-                  <Sparkles className="h-4 w-4 text-indigo-600" />
-                  Triagem e Avaliação por Inteligência Artificial
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                <div className="flex items-center gap-2 text-slate-800 font-semibold text-xs">
+                  <Info className="h-4 w-4 text-indigo-600" />
+                  Parecer da Triagem
                 </div>
-                <p className="text-xs text-indigo-800 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   {ocorrencia.iaJustificativa}
                 </p>
               </div>
@@ -493,10 +492,10 @@ export function OcorrenciaTimelineJanela({
             <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-3">
               <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                 <ShieldCheck className="h-5 w-5 text-indigo-600" />
-                Acompanhamento em Tempo Real pelo Morador
+                Andamento do Chamado
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Cada ação, contato com fornecedores e vistoria realizada pela equipe do condomínio é registrada na linha do tempo ao lado com total transparência.
+                As intervenções, contatos com fornecedores e providências adotadas pela equipe são registradas na trilha ao lado.
               </p>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-2 text-xs text-slate-500">
                 <Info className="h-4 w-4 text-indigo-500 shrink-0" />

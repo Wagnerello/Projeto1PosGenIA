@@ -4,15 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   ArrowLeft,
-  Sparkles,
+  FileText,
   AlertTriangle,
   Loader2,
   Send,
   Building2,
   HelpCircle,
-  Clock,
   ShieldCheck,
-  CheckCircle2
 } from 'lucide-react';
 
 export interface NovaOcorrenciaJanelaProps {
@@ -77,7 +75,7 @@ export function NovaOcorrenciaJanela({
             </span>
           </div>
           <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-indigo-400" />
+            <FileText className="h-5 w-5 text-indigo-400" />
             Registrar Nova Ocorrência
           </h2>
           <p className="text-xs text-slate-300">
@@ -130,7 +128,7 @@ export function NovaOcorrenciaJanela({
                 className="rounded-xl border-slate-200 text-sm font-semibold"
               />
               <p className="text-[11px] text-slate-400">
-                Um título conciso ajuda a equipe a priorizar o atendimento de imediato.
+                Um título objetivo facilita o direcionamento e atendimento pela equipe.
               </p>
             </div>
 
@@ -146,7 +144,7 @@ export function NovaOcorrenciaJanela({
               <textarea
                 id="descricao"
                 rows={5}
-                placeholder="Descreva detalhadamente o que está ocorrendo, horário em que aconteceu, se há risco imediato ou impacto em outras unidades..."
+                placeholder="Descreva o que está ocorrendo, local exato, horário e se há impacto em outras unidades..."
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 required
@@ -172,7 +170,7 @@ export function NovaOcorrenciaJanela({
                 {submitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processando com IA...
+                    Enviando chamado...
                   </>
                 ) : (
                   <>
@@ -185,36 +183,27 @@ export function NovaOcorrenciaJanela({
           </form>
         </div>
 
-        {/* Coluna 2 (5 colunas): Como Funciona a Triagem por IA */}
+        {/* Coluna 2 (5 colunas): Fluxo de Atendimento e Orientações */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Card da IA */}
-          <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-6 border border-indigo-950 shadow-md space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center">
-                <Sparkles className="h-4 w-4" />
-              </div>
-              <div>
-                <h4 className="font-bold text-sm text-white">Triagem Inteligente por IA</h4>
-                <p className="text-[11px] text-indigo-200">Classificação e priorização em segundos</p>
-              </div>
+          {/* Card de Fluxo */}
+          <div className="bg-slate-50 text-slate-800 rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+            <div>
+              <h4 className="font-bold text-sm text-slate-900">Como funciona o atendimento</h4>
+              <p className="text-xs text-slate-500">Etapas após o envio do chamado</p>
             </div>
 
-            <p className="text-xs text-indigo-100 leading-relaxed">
-              Você não precisa se preocupar em selecionar categoria ou nível de urgência manualmente. Nosso modelo de linguagem analisa o seu relato e infere automaticamente:
-            </p>
-
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span><strong>Categoria:</strong> Manutenção, Barulho, Segurança, etc.</span>
+            <div className="space-y-2.5 text-xs">
+              <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-start gap-2.5 shadow-2xs">
+                <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md text-[11px] shrink-0">1</span>
+                <span className="text-slate-700"><strong>Classificação imediata:</strong> O chamado é categorizado e priorizado automaticamente conforme o relato.</span>
               </div>
-              <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
-                <span><strong>Gravidade:</strong> Alta, Média ou Baixa prioridade</span>
+              <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-start gap-2.5 shadow-2xs">
+                <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md text-[11px] shrink-0">2</span>
+                <span className="text-slate-700"><strong>Encaminhamento:</strong> O chamado é atribuído ao responsável adequado (zeladoria, portaria ou administração).</span>
               </div>
-              <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 flex items-center gap-2">
-                <Clock className="h-4 w-4 text-indigo-300 shrink-0" />
-                <span><strong>Linha do Tempo:</strong> Acompanhamento transparente</span>
+              <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-start gap-2.5 shadow-2xs">
+                <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md text-[11px] shrink-0">3</span>
+                <span className="text-slate-700"><strong>Acompanhamento:</strong> Cada providência ou atualização de status é registrada na sua linha do tempo.</span>
               </div>
             </div>
           </div>
@@ -223,25 +212,25 @@ export function NovaOcorrenciaJanela({
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-3">
             <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <HelpCircle className="h-4 w-4 text-indigo-600" />
-              Dicas para um Atendimento Rápido
+              Orientações para o relato
             </h4>
             <ul className="space-y-2 text-xs text-slate-600 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5" />
-                <span><strong>Localização exata:</strong> Informe onde o problema se encontra (ex: garagem vaga 12, escadaria 3º andar).</span>
+                <span><strong>Localização precisa:</strong> Indique o local exato (ex: vaga 12 do subsolo, escadaria do 3º andar).</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5" />
-                <span><strong>Horários de incidência:</strong> Em casos de ruído, informe quando os barulhos iniciam e cessam.</span>
+                <span><strong>Horários:</strong> Se houver ruído recorrente, informe os períodos em que ocorre.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5" />
-                <span><strong>Histórico prévio:</strong> Mencione se o problema já aconteceu antes ou se foi feito algum reparo recente.</span>
+                <span><strong>Reincidência:</strong> Indique se o problema já aconteceu anteriormente ou se houve reparo recente.</span>
               </li>
             </ul>
-            <div className="pt-2 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-400">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-              Seu chamado é arquivado com segurança e criptografia.
+            <div className="pt-2 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-500">
+              <ShieldCheck className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+              Chamado registrado no histórico oficial da unidade.
             </div>
           </div>
         </div>

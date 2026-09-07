@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.3] - 2026-09-07
+
+### Melhorias de Usabilidade e Interface
+- **Painel do Morador sem redundâncias:** Eliminado o bloco intermediário que repetia as informações do morador e os botões de ação logo abaixo do cabeçalho, trazendo a lista de chamados e o mural para a primeira dobra de tela.
+- **Ações claras e centralizadas:** Unificado o botão de "Nova Ocorrência" e adicionado botão de atualização geral no topo da página, removendo botões de recarregamento duplicados no histórico e no mural.
+- **Formulário de chamado mais direto e prático:** Substituídos jargões e explicações técnicas sobre inteligência artificial por orientações objetivas sobre o fluxo de atendimento da administração e dicas para descrever o problema.
+- **Trilha de ocorrência com parecer neutro:** O parecer da triagem agora é apresentado em formato institucional e discreto, com foco no acompanhamento das vistorias e providências adotadas pela equipe predial.
+
+---
+
 ## [1.1.2] - 2026-09-07
 
 ### Melhorias de Usabilidade e Interface

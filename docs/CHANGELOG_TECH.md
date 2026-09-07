@@ -4,6 +4,15 @@ Todas as alterações técnicas relevantes deste projeto são documentadas aqui,
 
 ## [Unreleased]
 
+## [v1.1.3] - 2026-09-07
+- [refactor] refatoração de UI e eliminação de redundâncias na visão do Morador — Refs: RN-001, spec §2, spec §3
+  - Remove card intermediário redundante que duplicava nome, unidade, condomínio e ações no MoradorView
+  - Consolida ações primárias no header com botão de Atualizar (Refresh), Nova Ocorrência e Sair
+  - Elimina botões duplicados de recarregamento em Ocorrências da Unidade e no Mural de Avisos
+  - Remove elementos de AI-slop, ícones de faísca (Sparkles) e textos promocionais de LLM em NovaOcorrenciaJanela
+  - Substitui coluna lateral de autopromoção de IA por fluxo objetivo de atendimento em 3 etapas
+  - Atualiza OcorrenciaTimelineJanela com rótulo neutro "Parecer da Triagem" e microcopy factual de acompanhamento
+
 ## [v1.1.2] - 2026-09-07
 - [refactor] refatoração completa de UI e UX do painel Super Admin — Refs: RN-001, spec §2, spec §3
   - Implementa arquitetura em abas operacionais (Condomínios Registrados e Novo Condomínio) eliminando formulário estático que empurrava a listagem

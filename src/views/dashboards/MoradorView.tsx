@@ -150,14 +150,25 @@ export default function MoradorView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <Button
-              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100"
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              disabled={loading}
+              className="border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-medium h-9"
+              title="Atualizar dados"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs font-semibold text-xs h-9 px-3.5"
               onClick={() => setModalOpen(true)}
             >
               <PlusCircle className="h-4 w-4 mr-1.5" /> Nova Ocorrência
             </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout} className="border-slate-300">
+            <Button variant="outline" size="sm" onClick={handleLogout} className="border-slate-300 text-xs h-9">
               <LogOut className="h-4 w-4 mr-1.5" /> Sair
             </Button>
           </div>
@@ -166,32 +177,20 @@ export default function MoradorView() {
 
       {/* Conteúdo Principal do Morador */}
       <main className="max-w-6xl mx-auto w-full p-6 md:p-8 space-y-6 flex-1">
-        {/* Banner de Boas-vindas */}
-        <div className="bg-gradient-to-r from-indigo-700 to-indigo-900 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">Olá, {appUser?.nome || 'Morador'}! 👋</h2>
-            <p className="text-indigo-100 text-sm mt-1 max-w-xl">
-              Este é o seu portal no <strong>{condoNome || 'Condomínio'}</strong>. Registre solicitações para o síndico e acompanhe comunicados importantes.
-            </p>
-          </div>
-          <div className="bg-white/10 backdrop-blur px-4 py-3 rounded-xl border border-white/20 text-center shrink-0">
-            <span className="text-xs text-indigo-200 block uppercase tracking-wider font-semibold">Sua Unidade</span>
-            <span className="text-lg font-bold text-white">{appUser?.unidadeNome || 'Não vinculada'}</span>
-          </div>
-        </div>
-
         {/* Tabs: Minhas Ocorrências e Mural de Avisos */}
         <Tabs defaultValue="ocorrencias" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-sm bg-slate-200/80 p-1 rounded-xl">
-            <TabsTrigger value="ocorrencias" className="data-[state=active]:bg-white data-[state=active]:text-indigo-700">
-              <FileText className="mr-1.5 h-4 w-4" />
-              Minhas Ocorrências ({ocorrencias.length})
-            </TabsTrigger>
-            <TabsTrigger value="avisos" className="data-[state=active]:bg-white data-[state=active]:text-indigo-700">
-              <Megaphone className="mr-1.5 h-4 w-4" />
-              Mural ({avisos.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between pb-1">
+            <TabsList className="bg-slate-200/80 p-1 rounded-xl">
+              <TabsTrigger value="ocorrencias" className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 font-semibold text-xs px-4">
+                <FileText className="mr-1.5 h-4 w-4" />
+                Minhas Ocorrências ({ocorrencias.length})
+              </TabsTrigger>
+              <TabsTrigger value="avisos" className="data-[state=active]:bg-white data-[state=active]:text-indigo-700 font-semibold text-xs px-4">
+                <Megaphone className="mr-1.5 h-4 w-4" />
+                Mural ({avisos.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Tab 1: Minhas Ocorrências */}
           <TabsContent value="ocorrencias" className="mt-4">
@@ -216,16 +215,11 @@ export default function MoradorView() {
               />
             ) : (
               <Card className="border-0 shadow-sm">
-              <CardHeader className="bg-white rounded-t-xl border-b border-slate-100 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-bold text-slate-800">Histórico de Ocorrências da Unidade</CardTitle>
-                  <CardDescription>
-                    Acompanhe em tempo real o status dos seus chamados pela administração predial.
-                  </CardDescription>
-                </div>
-                <Button variant="ghost" size="sm" onClick={loadData} disabled={loading}>
-                  <RefreshCw className={`h-4 w-4 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
-                </Button>
+              <CardHeader className="bg-white rounded-t-xl border-b border-slate-100">
+                <CardTitle className="text-lg font-bold text-slate-800">Ocorrências da Unidade</CardTitle>
+                <CardDescription>
+                  Chamados registrados e andamento do atendimento pela administração.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0 bg-white rounded-b-xl">
                 {loading ? (
@@ -294,34 +288,22 @@ export default function MoradorView() {
           {/* Tab 2: Mural de Avisos */}
           <TabsContent value="avisos" className="mt-4 space-y-4">
             {/* Barra informativa com identificação de bloco */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                  <Megaphone className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-sm">
-                    Mural de Comunicados do Condomínio
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {blocoMorador ? (
-                      <>Exibindo comunicados gerais e avisos direcionados para o <strong>{blocoMorador}</strong>.</>
-                    ) : (
-                      <>Exibindo comunicados oficiais emitidos pela administração do condomínio.</>
-                    )}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+                <Megaphone className="h-5 w-5" />
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadData}
-                disabled={loading}
-                className="text-xs border-slate-200 self-start sm:self-auto"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
-                Atualizar Mural
-              </Button>
+              <div>
+                <h3 className="font-semibold text-slate-900 text-sm">
+                  Mural de Comunicados do Condomínio
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {blocoMorador ? (
+                    <>Exibindo comunicados gerais e avisos direcionados para o <strong>{blocoMorador}</strong>.</>
+                  ) : (
+                    <>Exibindo comunicados oficiais emitidos pela administração do condomínio.</>
+                  )}
+                </p>
+              </div>
             </div>
 
             {loading ? (
