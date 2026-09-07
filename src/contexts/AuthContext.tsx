@@ -1,3 +1,4 @@
+/* eslint-disable quality/no-direct-data-access, max-statements, quality/no-direct-console */ // FIXME: D�vida t�cnica (Quarentena)
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";

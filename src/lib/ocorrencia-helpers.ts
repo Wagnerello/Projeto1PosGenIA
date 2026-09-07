@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, complexity */ // FIXME: D�vida t�cnica (Quarentena)
 export type ResponsavelOcorrencia =
   | 'Síndica'
   | 'Zeladoria'

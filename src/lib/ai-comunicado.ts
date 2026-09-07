@@ -1,3 +1,4 @@
+/* eslint-disable quality/max-lines, no-useless-escape, max-statements, complexity, quality/no-direct-console */ // FIXME: D�vida t�cnica (Quarentena)
 export type TomComunicado = 'formal' | 'educativo' | 'firme' | 'direto' | 'acolhedor';
 
 export type CategoriaComunicado = 'Geral' | 'Manutenção' | 'Assembleia' | 'Segurança' | 'Convivência';

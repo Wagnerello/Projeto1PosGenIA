@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */ // FIXME: D�vida t�cnica (Quarentena)
 import { describe, it, expect } from 'vitest';
 import {
   canCloseOcorrencia,

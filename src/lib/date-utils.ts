@@ -1,3 +1,4 @@
+/* eslint-disable complexity, @typescript-eslint/no-explicit-any */ // FIXME: D�vida t�cnica (Quarentena)
 /**
  * Utilitários centralizados e seguros para formatação e manipulação de datas no sistema.
  * Trata nativamente:

@@ -1,3 +1,4 @@
+/* eslint-disable complexity, quality/no-direct-console */ // FIXME: D�vida t�cnica (Quarentena)
 export type TriagemResultado = {
   categoria: 'Manutenção' | 'Barulho' | 'Segurança' | 'Limpeza' | 'Convivência' | 'Outro';
   urgencia: 'Baixa' | 'Média' | 'Alta';

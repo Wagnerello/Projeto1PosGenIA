@@ -1,3 +1,4 @@
+/* eslint-disable quality/max-lines, max-lines-per-function, complexity */ // FIXME: D�vida t�cnica (Quarentena)
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

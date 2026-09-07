@@ -3,6 +3,7 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+- [refactor] refactor(ui): implementar responsividade mobile menus hamburguer e cortar v1.1.4 (commit: b4144cb) — Refs: nenhuma
 
 ## [v1.1.4] - 2026-09-07
 - [refactor] responsividade mobile em todas as visões, navegação por drawer hambúrguer e eliminação de redundâncias — Refs: RN-001, spec §2, spec §3

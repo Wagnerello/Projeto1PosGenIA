@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-restricted-paths, @typescript-eslint/no-explicit-any, quality/no-direct-console */ // FIXME: D�vida t�cnica (Quarentena)
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

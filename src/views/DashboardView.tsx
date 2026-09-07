@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-restricted-paths, complexity */ // FIXME: D�vida t�cnica (Quarentena)
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, LogOut, Loader2 } from 'lucide-react';

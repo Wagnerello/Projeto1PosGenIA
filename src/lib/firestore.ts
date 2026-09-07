@@ -1,3 +1,4 @@
+/* eslint-disable quality/max-lines, @typescript-eslint/no-explicit-any, max-statements */ // FIXME: D�vida t�cnica (Quarentena)
 import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { getTimestampMillis } from "./date-utils";

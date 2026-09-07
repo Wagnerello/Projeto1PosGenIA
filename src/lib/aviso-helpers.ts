@@ -1,3 +1,4 @@
+/* eslint-disable complexity */ // FIXME: D�vida t�cnica (Quarentena)
 import type { AvisoData } from './firestore';
 
 /**

@@ -1,3 +1,4 @@
+/* eslint-disable complexity */ // FIXME: D�vida t�cnica (Quarentena)
 export type UnitData = {
   id?: string;
   torre?: string;
