@@ -111,26 +111,26 @@ export function MoradorEditorJanela({
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Barra de Ação Superior */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 md:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onVoltar}
               disabled={saving}
-              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold cursor-pointer"
+              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold cursor-pointer min-h-[44px] sm:min-h-[36px] px-3.5"
             >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              <ArrowLeft className="h-4 w-4 mr-1.5 shrink-0" />
               Voltar para Moradores
             </Button>
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               Gestão de Acesso & Perfil
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <UserCheck className="h-6 w-6 text-indigo-400" />
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <UserCheck className="h-6 w-6 text-indigo-400 shrink-0" />
             Editar Cadastro: {morador?.nome || 'Morador'}
           </h2>
           <p className="text-xs text-slate-300">
@@ -151,7 +151,7 @@ export function MoradorEditorJanela({
       {/* Grid de Edição: 2 Colunas */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Coluna 1 (7 colunas): Formulário */}
-        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
+        <div className="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-6">
           <div className="pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-indigo-600" />
@@ -181,6 +181,7 @@ export function MoradorEditorJanela({
                 onChange={(e) => setNome(e.target.value)}
                 required
                 disabled={saving}
+                className="text-base sm:text-sm h-11 sm:h-10"
               />
             </div>
 
@@ -198,9 +199,9 @@ export function MoradorEditorJanela({
                 <Input
                   value={morador?.email || ''}
                   disabled
-                  className="bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed pl-9 font-mono text-xs"
+                  className="bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed pl-9 font-mono text-xs h-11 sm:h-10"
                 />
-                <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" />
+                <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-3.5 sm:top-3" />
               </div>
             </div>
 
@@ -215,9 +216,9 @@ export function MoradorEditorJanela({
                   value={telefone}
                   onChange={(e) => setTelefone(e.target.value)}
                   disabled={saving}
-                  className="pl-9 text-sm"
+                  className="pl-9 text-base sm:text-sm h-11 sm:h-10"
                 />
-                <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" />
+                <Phone className="h-4 w-4 text-slate-400 absolute left-3 top-3.5 sm:top-3" />
               </div>
             </div>
 
@@ -230,7 +231,7 @@ export function MoradorEditorJanela({
                 value={unidadeId}
                 onChange={(e) => setUnidadeId(e.target.value)}
                 disabled={saving}
-                className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
+                className="w-full min-h-[44px] sm:h-10 px-3 rounded-md border border-slate-200 bg-white text-base sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer"
                 required
               >
                 <option value="">Selecione o apartamento...</option>
@@ -259,7 +260,7 @@ export function MoradorEditorJanela({
                   type="button"
                   onClick={() => setStatus('ativo')}
                   disabled={saving}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                  className={`p-3.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 min-h-[64px] ${
                     status === 'ativo'
                       ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-500/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
@@ -283,7 +284,7 @@ export function MoradorEditorJanela({
                   type="button"
                   onClick={() => setStatus('pendente')}
                   disabled={saving}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                  className={`p-3.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 min-h-[64px] ${
                     status === 'pendente'
                       ? 'border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
@@ -307,7 +308,7 @@ export function MoradorEditorJanela({
                   type="button"
                   onClick={() => setStatus('inativo')}
                   disabled={saving}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                  className={`p-3.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 min-h-[64px] ${
                     status === 'inativo'
                       ? 'border-rose-500 bg-rose-50/50 ring-2 ring-rose-500/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
@@ -329,20 +330,20 @@ export function MoradorEditorJanela({
             </div>
 
             {/* Ações */}
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+            <div className="pt-4 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onVoltar}
                 disabled={saving}
-                className="border-slate-200 text-slate-600 cursor-pointer text-xs"
+                className="border-slate-200 text-slate-600 cursor-pointer text-xs w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-5 shadow-sm cursor-pointer"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-5 shadow-sm cursor-pointer w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 {saving ? (
                   <>

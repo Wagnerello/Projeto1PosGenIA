@@ -417,20 +417,20 @@ export default function RegisterView() {
   // Render: Formulário Principal Refatorado (Ultra Limpo e Fluido)
   // ==========================================================================
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50/70 p-4 sm:p-6">
+    <div className="min-h-dvh flex items-center justify-center bg-slate-50/70 p-3 sm:p-6 pb-safe pt-safe">
       <Card className="w-full max-w-lg shadow-xl shadow-slate-200/50 border border-slate-200/80 bg-white rounded-2xl overflow-hidden">
         {/* Cabeçalho minimalista e contextual */}
-        <CardHeader className="text-center pt-7 pb-5 px-6 sm:px-8 border-b border-slate-100 space-y-2">
+        <CardHeader className="text-center pt-6 sm:pt-7 pb-4 sm:pb-5 px-4 sm:px-8 border-b border-slate-100 space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 mx-auto">
             {isSindica ? (
               <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
             ) : (
               <Building2 className="w-3.5 h-3.5 text-indigo-600" />
             )}
-            <span>Condomínio {inviteCtx.condominioNome}</span>
+            <span className="truncate max-w-[220px] sm:max-w-xs">Condomínio {inviteCtx.condominioNome}</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             {isSindica ? 'Assumir Gestão' : 'Solicitar Acesso'}
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm leading-relaxed max-w-sm mx-auto">
@@ -440,7 +440,7 @@ export default function RegisterView() {
           </p>
         </CardHeader>
 
-        <CardContent className="pt-6 px-6 sm:px-8 pb-4">
+        <CardContent className="pt-5 sm:pt-6 px-4 sm:px-8 pb-4">
           <form onSubmit={handleRegister} className="space-y-4">
             {error && (
               <Alert variant="destructive" className="py-2.5">
@@ -461,7 +461,7 @@ export default function RegisterView() {
                 required
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="h-11 border-slate-300 rounded-xl text-sm focus:border-indigo-500"
+                className="h-11 sm:h-10 border-slate-300 rounded-xl text-base sm:text-sm focus:border-indigo-500"
               />
             </div>
 
@@ -477,7 +477,7 @@ export default function RegisterView() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-11 border-slate-300 rounded-xl text-sm focus:border-indigo-500"
+                className="h-11 sm:h-10 border-slate-300 rounded-xl text-base sm:text-sm focus:border-indigo-500"
               />
             </div>
 
@@ -515,7 +515,7 @@ export default function RegisterView() {
                     minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pr-10 h-11 border-slate-300 rounded-xl text-sm focus:border-indigo-500"
+                    className="pr-10 h-11 sm:h-10 border-slate-300 rounded-xl text-base sm:text-sm focus:border-indigo-500"
                     placeholder="••••••••"
                   />
                   <button
@@ -523,7 +523,7 @@ export default function RegisterView() {
                     tabIndex={-1}
                     aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-1 top-1 w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors touch-target"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -542,7 +542,7 @@ export default function RegisterView() {
                     minLength={6}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`pr-10 h-11 rounded-xl text-sm border-slate-300 focus:border-indigo-500 ${
+                    className={`pr-10 h-11 sm:h-10 rounded-xl text-base sm:text-sm border-slate-300 focus:border-indigo-500 ${
                       confirmPassword && confirmPassword === password
                         ? 'border-emerald-400 focus:border-emerald-500'
                         : confirmPassword && confirmPassword !== password
@@ -556,7 +556,7 @@ export default function RegisterView() {
                     tabIndex={-1}
                     aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Exibir confirmação de senha'}
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-1 top-1 w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors touch-target"
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -575,7 +575,7 @@ export default function RegisterView() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+                className="w-full h-11 sm:h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs sm:text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer touch-target"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -592,13 +592,13 @@ export default function RegisterView() {
         </CardContent>
 
         {/* Rodapé Simplificado */}
-        <CardFooter className="pt-2 pb-6 px-6 sm:px-8 border-t border-slate-100 flex justify-center">
+        <CardFooter className="pt-2 pb-5 sm:pb-6 px-4 sm:px-8 border-t border-slate-100 flex justify-center">
           <p className="text-xs text-slate-500">
             Já possui acesso liberado?{' '}
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
+              className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors cursor-pointer"
             >
               Fazer login
             </button>

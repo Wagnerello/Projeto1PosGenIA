@@ -79,25 +79,25 @@ export function UnidadeEditorJanela({
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Barra de Ação Superior */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 md:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onVoltar}
-              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold"
+              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold min-h-[44px] sm:min-h-[36px] px-3.5"
             >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              <ArrowLeft className="h-4 w-4 mr-1.5 shrink-0" />
               Voltar para Unidades
             </Button>
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               {isEditing ? 'Edição Cadastral' : 'Novo Cadastro'}
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-indigo-400" />
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-indigo-400 shrink-0" />
             {isEditing ? `Editar Unidade ${initialData?.numero}` : 'Cadastrar Nova Unidade'}
           </h2>
           <p className="text-xs text-slate-300">
@@ -122,7 +122,7 @@ export function UnidadeEditorJanela({
       {/* Grid de Edição: 2 Colunas */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Coluna 1 (7 colunas): Formulário de Edição */}
-        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
+        <div className="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-6">
           <div className="pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
               <Building2 className="h-4 w-4 text-indigo-600" />
@@ -150,7 +150,7 @@ export function UnidadeEditorJanela({
                 value={torre}
                 onChange={(e) => setTorre(e.target.value)}
                 required
-                className="rounded-xl border-slate-200 text-sm"
+                className="rounded-xl border-slate-200 text-base sm:text-sm h-11 sm:h-10"
               />
               <p className="text-[11px] text-slate-400">
                 Permite segmentar comunicados do mural exclusivamente para moradores desta torre.
@@ -167,7 +167,7 @@ export function UnidadeEditorJanela({
                   value={numero}
                   onChange={(e) => setNumero(e.target.value)}
                   required
-                  className="rounded-xl border-slate-200 text-sm font-semibold"
+                  className="rounded-xl border-slate-200 text-base sm:text-sm font-semibold h-11 sm:h-10"
                 />
               </div>
 
@@ -180,25 +180,25 @@ export function UnidadeEditorJanela({
                   placeholder="Ex: 1, 5, 10"
                   value={andar}
                   onChange={(e) => setAndar(e.target.value)}
-                  className="rounded-xl border-slate-200 text-sm"
+                  className="rounded-xl border-slate-200 text-base sm:text-sm h-11 sm:h-10"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onVoltar}
                 disabled={saving}
-                className="text-xs font-semibold border-slate-200"
+                className="text-xs font-semibold border-slate-200 w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-100"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-100 w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 {saving ? (
                   <>

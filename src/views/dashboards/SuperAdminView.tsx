@@ -22,7 +22,8 @@ import {
   X,
   ArrowLeft,
   Mail,
-  Users
+  Users,
+  Menu
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
@@ -46,6 +47,7 @@ export default function SuperAdminView() {
   const [loadingList, setLoadingList] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'condominios' | 'novo'>('condominios');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Formulário
   const [nome, setNome] = useState('');
@@ -198,10 +200,104 @@ export default function SuperAdminView() {
         </div>
       )}
 
+      {/* Drawer Móvel de Navegação do Super Admin */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative w-72 max-w-[80vw] bg-white h-full shadow-2xl z-10 flex flex-col p-5 animate-in slide-in-from-left duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">Super Admin</h3>
+                  <p className="text-[11px] text-slate-500">Gestão Global</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                aria-label="Fechar menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 py-4 space-y-1.5 overflow-y-auto">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
+                Navegação
+              </p>
+              <button
+                onClick={() => {
+                  setActiveTab('condominios');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-colors min-h-[48px] cursor-pointer ${
+                  activeTab === 'condominios'
+                    ? 'bg-indigo-50 text-indigo-700 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Building2 className="h-4 w-4 shrink-0" />
+                  <span>Condomínios Registrados</span>
+                </div>
+                <span className="bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  {condominios.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('novo');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-colors min-h-[48px] cursor-pointer ${
+                  activeTab === 'novo'
+                    ? 'bg-indigo-50 text-indigo-700 font-bold'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Plus className="h-4 w-4 shrink-0" />
+                  <span>Novo Condomínio</span>
+                </div>
+              </button>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+              <div className="px-1">
+                <p className="text-xs font-medium text-slate-800 truncate">{appUser?.email}</p>
+                <p className="text-[10px] text-indigo-600 font-semibold">Super Administrador</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full border-slate-200 text-rose-600 hover:bg-rose-50 hover:border-rose-200 h-10 text-xs min-h-[44px]"
+              >
+                <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sair da conta
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Navbar do Super Admin */}
       <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-6 py-3.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 -ml-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer transition-colors"
+              aria-label="Abrir menu de navegação"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
               <ShieldCheck className="h-5 w-5" />
             </div>
@@ -239,8 +335,25 @@ export default function SuperAdminView() {
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 md:p-8 space-y-6 flex-1">
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-full space-y-5">
-          {/* Navegação por Abas Limpa */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Barra Contextual Móvel (Exibe módulo ativo e aciona o Drawer) */}
+          <div className="flex md:hidden items-center justify-between bg-white px-3 py-2.5 rounded-xl border border-slate-200/80 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Módulo:</span>
+              <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                {activeTab === 'condominios' ? 'Condomínios Registrados' : 'Novo Condomínio'}
+              </span>
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-indigo-50 cursor-pointer min-h-[40px]"
+            >
+              <Menu className="h-3.5 w-3.5" />
+              <span>Navegação</span>
+            </button>
+          </div>
+
+          {/* Navegação por Abas Limpa (Desktop) */}
+          <div className="hidden md:flex items-center justify-between gap-3">
             <TabsList className="bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 flex items-center gap-1 h-auto w-fit">
               <TabsTrigger
                 value="condominios"
@@ -261,19 +374,6 @@ export default function SuperAdminView() {
                 Novo Condomínio
               </TabsTrigger>
             </TabsList>
-
-            {activeTab === 'condominios' && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setLastCreated(null);
-                  setActiveTab('novo');
-                }}
-                className="h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs cursor-pointer self-start sm:self-auto"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" /> Cadastrar Condomínio
-              </Button>
-            )}
           </div>
 
           {/* ABA 1: CONDOMÍNIOS REGISTRADOS */}
@@ -408,82 +508,163 @@ export default function SuperAdminView() {
                   </div>
                 ) : (
                   <div className="border border-slate-100 rounded-xl overflow-hidden">
-                    <Table>
-                      <TableHeader className="bg-slate-50">
-                        <TableRow className="border-slate-100">
-                          <TableHead className="font-semibold text-slate-700 text-xs">Condomínio</TableHead>
-                          <TableHead className="font-semibold text-slate-700 text-xs">Síndico(a) Responsável</TableHead>
-                          <TableHead className="font-semibold text-slate-700 text-xs">Status Síndica</TableHead>
-                          <TableHead className="font-semibold text-slate-700 text-xs">Código Moradores</TableHead>
-                          <TableHead className="font-semibold text-slate-700 text-xs text-right">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredCondos.map((c) => {
-                          const moradorLink = `${window.location.origin}/registro?condoId=${c.id}&invite=${c.codigoConviteMorador}&role=morador`;
-                          const hasSindicaUid = Boolean(c.sindicaUid);
+                    {/* Visão Desktop (>= 768px): Tabela Tradicional */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <Table>
+                        <TableHeader className="bg-slate-50">
+                          <TableRow className="border-slate-100">
+                            <TableHead className="font-semibold text-slate-700 text-xs">Condomínio</TableHead>
+                            <TableHead className="font-semibold text-slate-700 text-xs">Síndico(a) Responsável</TableHead>
+                            <TableHead className="font-semibold text-slate-700 text-xs">Status Síndica</TableHead>
+                            <TableHead className="font-semibold text-slate-700 text-xs">Código Moradores</TableHead>
+                            <TableHead className="font-semibold text-slate-700 text-xs text-right">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredCondos.map((c) => {
+                            const moradorLink = `${window.location.origin}/registro?condoId=${c.id}&invite=${c.codigoConviteMorador}&role=morador`;
+                            const hasSindicaUid = Boolean(c.sindicaUid);
 
-                          return (
-                            <TableRow key={c.id} className="hover:bg-slate-50/70 border-slate-100">
-                              {/* Nome e CNPJ */}
-                              <TableCell>
-                                <div>
-                                  <p className="font-semibold text-slate-900 text-sm">{c.nome}</p>
-                                  <p className="text-xs text-slate-400 font-mono mt-0.5">
-                                    {c.cnpj ? `CNPJ: ${c.cnpj}` : 'Sem CNPJ'}
-                                  </p>
-                                </div>
-                              </TableCell>
-
-                              {/* Síndica */}
-                              <TableCell>
-                                <div className="text-sm font-medium text-slate-800">
-                                  {c.sindicaNome || 'Não informado'}
-                                </div>
-                                <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                                  <Mail className="h-3 w-3 text-slate-400" />
-                                  <span>{c.sindicaEmail || '—'}</span>
-                                </div>
-                              </TableCell>
-
-                              {/* Status Síndica */}
-                              <TableCell>
-                                {hasSindicaUid ? (
-                                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 text-xs font-medium">
-                                    <Check className="h-3 w-3 mr-1" /> Ativa
-                                  </Badge>
-                                ) : (
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-xs font-medium">
-                                      Convite: {c.codigoConviteSindica}
-                                    </Badge>
-                                    <button
-                                      type="button"
-                                      onClick={() => copyToClipboard(c.codigoConviteSindica, `sind-code-${c.id}`, 'Código de convite copiado!')}
-                                      className="text-slate-400 hover:text-indigo-600 p-1 rounded cursor-pointer"
-                                      title="Copiar código de convite da síndica"
-                                      aria-label="Copiar código de convite da síndica"
-                                    >
-                                      {copiedField === `sind-code-${c.id}` ? (
-                                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                      ) : (
-                                        <Copy className="w-3.5 h-3.5" />
-                                      )}
-                                    </button>
+                            return (
+                              <TableRow key={c.id} className="hover:bg-slate-50/70 border-slate-100">
+                                {/* Nome e CNPJ */}
+                                <TableCell>
+                                  <div>
+                                    <p className="font-semibold text-slate-900 text-sm">{c.nome}</p>
+                                    <p className="text-xs text-slate-400 font-mono mt-0.5">
+                                      {c.cnpj ? `CNPJ: ${c.cnpj}` : 'Sem CNPJ'}
+                                    </p>
                                   </div>
-                                )}
-                              </TableCell>
+                                </TableCell>
 
-                              {/* Código Moradores */}
-                              <TableCell>
-                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800">
-                                  <span>{c.codigoConviteMorador || '—'}</span>
+                                {/* Síndica */}
+                                <TableCell>
+                                  <div className="text-sm font-medium text-slate-800">
+                                    {c.sindicaNome || 'Não informado'}
+                                  </div>
+                                  <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                                    <Mail className="h-3 w-3 text-slate-400" />
+                                    <span>{c.sindicaEmail || '—'}</span>
+                                  </div>
+                                </TableCell>
+
+                                {/* Status Síndica */}
+                                <TableCell>
+                                  {hasSindicaUid ? (
+                                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 text-xs font-medium">
+                                      <Check className="h-3 w-3 mr-1" /> Ativa
+                                    </Badge>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-xs font-medium">
+                                        Convite: {c.codigoConviteSindica}
+                                      </Badge>
+                                      <button
+                                        type="button"
+                                        onClick={() => copyToClipboard(c.codigoConviteSindica, `sind-code-${c.id}`, 'Código de convite copiado!')}
+                                        className="text-slate-400 hover:text-indigo-600 p-1 rounded cursor-pointer"
+                                        title="Copiar código de convite da síndica"
+                                        aria-label="Copiar código de convite da síndica"
+                                      >
+                                        {copiedField === `sind-code-${c.id}` ? (
+                                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                        ) : (
+                                          <Copy className="w-3.5 h-3.5" />
+                                        )}
+                                      </button>
+                                    </div>
+                                  )}
+                                </TableCell>
+
+                                {/* Código Moradores */}
+                                <TableCell>
+                                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800">
+                                    <span>{c.codigoConviteMorador || '—'}</span>
+                                    {c.codigoConviteMorador && (
+                                      <button
+                                        type="button"
+                                        onClick={() => copyToClipboard(c.codigoConviteMorador, `morador-code-${c.id}`, 'Código de moradores copiado!')}
+                                        className="text-slate-400 hover:text-indigo-600 p-0.5 rounded cursor-pointer ml-1"
+                                        title="Copiar código do mural"
+                                        aria-label="Copiar código do mural"
+                                      >
+                                        {copiedField === `morador-code-${c.id}` ? (
+                                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                        ) : (
+                                          <Copy className="w-3.5 h-3.5" />
+                                        )}
+                                      </button>
+                                    )}
+                                  </div>
+                                </TableCell>
+
+                                {/* Ações */}
+                                <TableCell className="text-right">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(moradorLink, `morador-link-${c.id}`, 'Link de cadastro de moradores copiado!')}
+                                    className="h-8 px-2.5 text-xs text-slate-600 hover:text-indigo-600 cursor-pointer"
+                                    title="Copiar link de convite dos moradores"
+                                  >
+                                    {copiedField === `morador-link-${c.id}` ? (
+                                      <><Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Copiado</>
+                                    ) : (
+                                      <><Copy className="h-3.5 w-3.5 mr-1" /> Link Morador</>
+                                    )}
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Visão Mobile (< 768px): Cartões Táteis Verticais */}
+                    <div className="block md:hidden divide-y divide-slate-100 bg-white">
+                      {filteredCondos.map((c) => {
+                        const moradorLink = `${window.location.origin}/registro?condoId=${c.id}&invite=${c.codigoConviteMorador}&role=morador`;
+                        const hasSindicaUid = Boolean(c.sindicaUid);
+
+                        return (
+                          <div key={c.id} className="p-4 space-y-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="font-bold text-slate-900 text-sm">{c.nome}</h4>
+                                <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                  {c.cnpj ? `CNPJ: ${c.cnpj}` : 'Sem CNPJ'}
+                                </p>
+                              </div>
+                              {hasSindicaUid ? (
+                                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs font-semibold shrink-0">
+                                  <Check className="h-3 w-3 mr-1" /> Ativa
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-xs font-medium shrink-0">
+                                  Pendente
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-xs text-slate-600 border border-slate-100">
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400">Síndica:</span>
+                                <span className="font-medium text-slate-800">{c.sindicaNome || 'Não informado'}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400">E-mail:</span>
+                                <span className="text-slate-700 truncate max-w-[180px]">{c.sindicaEmail || '—'}</span>
+                              </div>
+                              <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                                <span className="text-slate-400">Código Mural:</span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono font-bold text-slate-800">{c.codigoConviteMorador || '—'}</span>
                                   {c.codigoConviteMorador && (
                                     <button
                                       type="button"
                                       onClick={() => copyToClipboard(c.codigoConviteMorador, `morador-code-${c.id}`, 'Código de moradores copiado!')}
-                                      className="text-slate-400 hover:text-indigo-600 p-0.5 rounded cursor-pointer ml-1"
-                                      title="Copiar código do mural"
+                                      className="text-slate-400 hover:text-indigo-600 p-1 rounded touch-target"
                                       aria-label="Copiar código do mural"
                                     >
                                       {copiedField === `morador-code-${c.id}` ? (
@@ -494,29 +675,25 @@ export default function SuperAdminView() {
                                     </button>
                                   )}
                                 </div>
-                              </TableCell>
+                              </div>
+                            </div>
 
-                              {/* Ações */}
-                              <TableCell className="text-right">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => copyToClipboard(moradorLink, `morador-link-${c.id}`, 'Link de cadastro de moradores copiado!')}
-                                  className="h-8 px-2.5 text-xs text-slate-600 hover:text-indigo-600 cursor-pointer"
-                                  title="Copiar link de convite dos moradores"
-                                >
-                                  {copiedField === `morador-link-${c.id}` ? (
-                                    <><Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Copiado</>
-                                  ) : (
-                                    <><Copy className="h-3.5 w-3.5 mr-1" /> Link Morador</>
-                                  )}
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => copyToClipboard(moradorLink, `morador-link-${c.id}`, 'Link de cadastro de moradores copiado!')}
+                              className="w-full h-10 border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-xs font-semibold touch-target justify-center"
+                            >
+                              {copiedField === `morador-link-${c.id}` ? (
+                                <><Check className="h-4 w-4 mr-1.5 text-emerald-600" /> Link de Morador Copiado</>
+                              ) : (
+                                <><Copy className="h-4 w-4 mr-1.5" /> Copiar Link de Cadastro de Moradores</>
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </CardContent>

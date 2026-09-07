@@ -4,7 +4,17 @@ Todas as alterações técnicas relevantes deste projeto são documentadas aqui,
 
 ## [Unreleased]
 
-## [v1.1.3] - 2026-09-07
+## [v1.1.4] - 2026-09-07
+- [refactor] responsividade mobile em todas as visões, navegação por drawer hambúrguer e eliminação de redundâncias — Refs: RN-001, spec §2, spec §3
+  - Adiciona suporte a safe area insets (`pb-safe`, `pt-safe`, `h-dvh`, `min-h-dvh`) e desativa zoom forçado no viewport em `index.html` e `index.css`
+  - Implementa Bottom Navigation Bar no mobile para o Morador com alternância tátil e botão central de ação
+  - Oculta Bottom Bar do Morador dinamicamente ao abrir modal de nova ocorrência ou timeline para evitar concorrência de toques
+  - Remove botões redundantes de "Novo" no header da lista de chamados e no empty state móvel do Morador
+  - Transforma abas de navegação da Síndica e Super Admin em menu hambúrguer com gaveta lateral móvel e áreas de toque >= 48px
+  - Adiciona barra contextual móvel exibindo o módulo em foco e atalho para abertura da gaveta em Síndica e Super Admin
+  - Elimina botões duplicados de criação avulsa em Síndica (Novo Comunicado na Home) e Super Admin (Cadastrar Condomínio ao lado da aba)
+  - Refatora todas as janelas modais (`NovaOcorrenciaJanela`, `NovaPublicacaoJanela`, `MoradorEditorJanela`, `UnidadeEditorJanela`, `UnitSelector`, `OcorrenciaTimelineJanela`) com comportamento adaptativo bottom sheet no mobile
+  - Ajusta formulários de login e cadastro (`AuthView`, `RegisterView`) para container flexível em `min-h-dvh` com inputs `text-base sm:text-sm` prevenindo auto-zoom no iOS Safari
 - [refactor] refatoração de UI e eliminação de redundâncias na visão do Morador — Refs: RN-001, spec §2, spec §3
   - Remove card intermediário redundante que duplicava nome, unidade, condomínio e ações no MoradorView
   - Consolida ações primárias no header com botão de Atualizar (Refresh), Nova Ocorrência e Sair

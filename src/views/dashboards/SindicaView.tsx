@@ -29,7 +29,8 @@ import {
   X,
   LayoutDashboard,
   ArrowRight,
-  Layers
+  Layers,
+  Menu
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
@@ -167,6 +168,9 @@ export default function SindicaView() {
   const [rotatingQr, setRotatingQr] = useState(false);
   const [rejectingMorador, setRejectingMorador] = useState<any | null>(null);
   const [isRejectingMorador, setIsRejectingMorador] = useState(false);
+
+  // Menu Hambúrguer Móvel
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Toast de feedback visual integrado
   const [feedbackToast, setFeedbackToast] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
@@ -695,12 +699,159 @@ export default function SindicaView() {
     );
   }
 
+  const sindicaTabsList = [
+    {
+      id: 'geral',
+      label: 'Visão Geral',
+      icon: LayoutDashboard,
+      badge: null,
+    },
+    {
+      id: 'aprovacoes',
+      label: 'Aprovações',
+      icon: UserCheck,
+      badge: pendingUsers.length > 0 ? { count: pendingUsers.length, color: 'bg-rose-500 text-white' } : null,
+    },
+    {
+      id: 'ocorrencias',
+      label: 'Ocorrências',
+      icon: FileText,
+      badge: ocorrenciasStats.aguardandoValidacao > 0 ? { count: ocorrenciasStats.aguardandoValidacao, color: 'bg-purple-600 text-white' } : null,
+    },
+    {
+      id: 'mural',
+      label: 'Comunicados',
+      icon: Megaphone,
+      badge: null,
+    },
+    {
+      id: 'moradores',
+      label: 'Moradores',
+      icon: Users,
+      badge: null,
+    },
+    {
+      id: 'unidades',
+      label: 'Unidades',
+      icon: Building2,
+      badge: null,
+    },
+    {
+      id: 'qrcode',
+      label: 'Convites & QR',
+      icon: QrCode,
+      badge: null,
+    },
+  ];
+
+  const currentTabObj = sindicaTabsList.find((t) => t.id === activeTab) || sindicaTabsList[0];
+  const CurrentTabIcon = currentTabObj.icon;
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Drawer / Menu Hambúrguer Móvel */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop com blur suave */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Painel lateral deslizante */}
+          <div className="relative w-72 sm:w-80 bg-white h-full shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200 pb-safe">
+            <div>
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-sm text-slate-900 truncate">{condo?.nome || 'Gestão Predial'}</h3>
+                    <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Painel Síndica</span>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="h-9 w-9 p-0 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
+                  aria-label="Fechar menu"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1.5">Módulos de Gestão</p>
+                {sindicaTabsList.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer min-h-[48px] touch-target ${
+                        isActive
+                          ? 'bg-indigo-50 text-indigo-700 font-bold shadow-2xs'
+                          : 'text-slate-700 hover:bg-slate-50 font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                        <span className="text-xs truncate">{tab.label}</span>
+                      </div>
+                      {tab.badge && (
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${tab.badge.color}`}>
+                          {tab.badge.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 bg-slate-50/80 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+                <span className="truncate font-medium text-slate-700">{appUser?.nome || 'Síndica'}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-8 px-2 text-xs font-semibold cursor-pointer"
+                >
+                  <LogOut className="h-3.5 w-3.5 mr-1" /> Sair
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header da Administração */}
       <header className="bg-white border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-6 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {/* Botão de Menu Hambúrguer Móvel */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden h-10 w-10 p-0 text-slate-700 hover:bg-slate-100 rounded-xl relative shrink-0 touch-target cursor-pointer"
+              aria-label="Abrir menu de navegação"
+            >
+              <Menu className="h-5 w-5" />
+              {(pendingUsers.length > 0 || ocorrenciasStats.aguardandoValidacao > 0) && (
+                <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />
+              )}
+            </Button>
+
             <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
               <Building2 className="h-5 w-5" />
             </div>
@@ -780,8 +931,39 @@ export default function SindicaView() {
         ) : (
           /* Abas de Operação da Síndica com Visão Geral (Home) */
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-5">
-            {/* Barra de Navegação por Abas Limpa e Sem Poluição */}
-            <TabsList className="bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 flex items-center gap-1 overflow-x-auto scrollbar-none h-auto w-full justify-start">
+            {/* Barra de Navegação Móvel Contextual (Exibida apenas em telas < 768px) */}
+            <div className="flex md:hidden items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <CurrentTabIcon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">Seção Ativa</p>
+                  <h3 className="text-sm font-bold text-slate-900 truncate flex items-center gap-1.5">
+                    {currentTabObj.label}
+                    {currentTabObj.badge && (
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${currentTabObj.badge.color}`}>
+                        {currentTabObj.badge.count}
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setMobileMenuOpen(true)}
+                className="text-xs border-slate-200 text-slate-700 hover:bg-slate-50 min-h-[40px] px-3 font-semibold rounded-xl shrink-0 cursor-pointer"
+              >
+                <Menu className="h-3.5 w-3.5 mr-1.5" />
+                Módulos
+              </Button>
+            </div>
+
+            {/* Barra de Navegação por Abas em Desktop (>= 768px) */}
+            <TabsList className="hidden md:flex bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 items-center gap-1 overflow-x-auto scrollbar-none h-auto w-full justify-start">
               <TabsTrigger
                 value="geral"
                 className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xs px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shrink-0 text-slate-600 hover:text-slate-900"
@@ -851,7 +1033,7 @@ export default function SindicaView() {
 
             {/* Tab: Visão Geral (HOME DA APLICAÇÃO) */}
             <TabsContent value="geral" className="space-y-5 mt-0">
-              {/* Barra de Boas-Vindas e Ações Rápidas */}
+              {/* Barra de Boas-Vindas e Ações Rápidas (Sem redundâncias de botões) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                 <div>
                   <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
@@ -865,16 +1047,9 @@ export default function SindicaView() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     size="sm"
-                    onClick={openNovoAviso}
-                    className="h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Novo Comunicado
-                  </Button>
-                  <Button
-                    size="sm"
                     variant="outline"
                     onClick={() => copyToClipboard(moradorLink, 'home')}
-                    className="h-9 text-xs font-medium border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl cursor-pointer"
+                    className="h-9 text-xs font-medium border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl cursor-pointer min-h-[44px] sm:min-h-[36px]"
                   >
                     {copiedField === 'home' ? (
                       <><Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Link Copiado</>
@@ -886,7 +1061,7 @@ export default function SindicaView() {
                     variant="ghost"
                     size="sm"
                     onClick={loadAllData}
-                    className="h-9 w-9 p-0 text-slate-500 hover:text-slate-800 rounded-xl"
+                    className="h-9 w-9 p-0 text-slate-500 hover:text-slate-800 rounded-xl min-h-[44px] min-w-[44px] sm:min-h-auto sm:min-w-auto flex items-center justify-center cursor-pointer"
                     title="Atualizar dados"
                     aria-label="Atualizar dados"
                   >
@@ -1209,51 +1384,92 @@ export default function SindicaView() {
                       <p className="text-xs text-slate-500">Nenhum morador aguardando liberação de acesso no momento.</p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader className="bg-slate-50">
-                          <TableRow>
-                            <TableHead>Nome</TableHead>
-                            <TableHead>E-mail</TableHead>
-                            <TableHead>Apartamento Requisitado</TableHead>
-                            <TableHead className="text-right">Ação</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {pendingUsers.map((u) => (
-                            <TableRow key={u.id} className="hover:bg-slate-50/60">
-                              <TableCell className="font-semibold text-slate-800 text-sm">{u.nome || 'Não informado'}</TableCell>
-                              <TableCell className="text-slate-600 text-xs">{u.email}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="bg-indigo-50 border-indigo-200 text-indigo-700 font-medium text-xs">
-                                  {u.unidadeNome || `Unidade ${u.unidadeId || 'N/A'}`}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right space-x-2">
-                                <Button
-                                  size="sm"
-                                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 px-3 rounded-lg cursor-pointer"
-                                  disabled={actionLoading === u.id}
-                                  onClick={() => handleApprove(u.id)}
-                                >
-                                  <UserCheck className="h-3.5 w-3.5 mr-1" />
-                                  {actionLoading === u.id ? 'Aprovando...' : 'Aprovar'}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-rose-600 border-rose-200 hover:bg-rose-50 text-xs h-8 px-3 rounded-lg cursor-pointer"
-                                  disabled={actionLoading === u.id}
-                                  onClick={() => setRejectingMorador(u)}
-                                >
-                                  <UserX className="h-3.5 w-3.5 mr-1" />
-                                  Recusar
-                                </Button>
-                              </TableCell>
+                    <div>
+                      {/* Visão Desktop (>= 768px): Tabela Tradicional */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <Table>
+                          <TableHeader className="bg-slate-50">
+                            <TableRow>
+                              <TableHead>Nome</TableHead>
+                              <TableHead>E-mail</TableHead>
+                              <TableHead>Apartamento Requisitado</TableHead>
+                              <TableHead className="text-right">Ação</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {pendingUsers.map((u) => (
+                              <TableRow key={u.id} className="hover:bg-slate-50/60">
+                                <TableCell className="font-semibold text-slate-800 text-sm">{u.nome || 'Não informado'}</TableCell>
+                                <TableCell className="text-slate-600 text-xs">{u.email}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className="bg-indigo-50 border-indigo-200 text-indigo-700 font-medium text-xs">
+                                    {u.unidadeNome || `Unidade ${u.unidadeId || 'N/A'}`}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right space-x-2">
+                                  <Button
+                                    size="sm"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 px-3 rounded-lg cursor-pointer"
+                                    disabled={actionLoading === u.id}
+                                    onClick={() => handleApprove(u.id)}
+                                  >
+                                    <UserCheck className="h-3.5 w-3.5 mr-1" />
+                                    {actionLoading === u.id ? 'Aprovando...' : 'Aprovar'}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-rose-600 border-rose-200 hover:bg-rose-50 text-xs h-8 px-3 rounded-lg cursor-pointer"
+                                    disabled={actionLoading === u.id}
+                                    onClick={() => setRejectingMorador(u)}
+                                  >
+                                    <UserX className="h-3.5 w-3.5 mr-1" />
+                                    Recusar
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Visão Mobile (< 768px): Cards Táteis com Ações Rápidas */}
+                      <div className="block md:hidden divide-y divide-slate-100 bg-white">
+                        {pendingUsers.map((u) => (
+                          <div key={u.id} className="p-4 space-y-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="font-bold text-slate-900 text-sm">{u.nome || 'Não informado'}</h4>
+                                <p className="text-xs text-slate-500 mt-0.5">{u.email}</p>
+                              </div>
+                              <Badge variant="outline" className="bg-indigo-50 border-indigo-200 text-indigo-700 font-medium text-xs shrink-0">
+                                {u.unidadeNome || `Unidade ${u.unidadeId || 'N/A'}`}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                              <Button
+                                size="sm"
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-10 rounded-xl cursor-pointer touch-target font-semibold justify-center"
+                                disabled={actionLoading === u.id}
+                                onClick={() => handleApprove(u.id)}
+                              >
+                                <UserCheck className="h-4 w-4 mr-1.5" />
+                                {actionLoading === u.id ? 'Aprovando...' : 'Aprovar'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full text-rose-600 border-rose-200 hover:bg-rose-50 text-xs h-10 rounded-xl cursor-pointer touch-target font-semibold justify-center"
+                                disabled={actionLoading === u.id}
+                                onClick={() => setRejectingMorador(u)}
+                              >
+                                <UserX className="h-4 w-4 mr-1.5" />
+                                Recusar
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -1422,80 +1638,156 @@ export default function SindicaView() {
                     </div>
                   ) : (
                     <div className="border border-slate-100 rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader className="bg-slate-50">
-                          <TableRow>
-                            <TableHead>Unidade / Apartamento</TableHead>
-                            <TableHead>Torre / Bloco</TableHead>
-                            <TableHead>Andar</TableHead>
-                            <TableHead>Morador(es) Vinculado(s)</TableHead>
-                            <TableHead className="text-right">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredUnitsList.map((unit) => {
-                            const { ativos, pendentes } = getMoradoresDaUnidade(unit.id);
-                            return (
-                              <TableRow key={unit.id} className="hover:bg-slate-50/60">
-                                <TableCell className="font-semibold text-slate-800">
-                                  Apto {unit.numero}
-                                </TableCell>
-                                <TableCell className="text-slate-600 text-sm">
-                                  <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-700">
+                      {/* Visão Desktop (>= 768px): Tabela Tradicional */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <Table>
+                          <TableHeader className="bg-slate-50">
+                            <TableRow>
+                              <TableHead>Unidade / Apartamento</TableHead>
+                              <TableHead>Torre / Bloco</TableHead>
+                              <TableHead>Andar</TableHead>
+                              <TableHead>Morador(es) Vinculado(s)</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredUnitsList.map((unit) => {
+                              const { ativos, pendentes } = getMoradoresDaUnidade(unit.id);
+                              return (
+                                <TableRow key={unit.id} className="hover:bg-slate-50/60">
+                                  <TableCell className="font-semibold text-slate-800">
+                                    Apto {unit.numero}
+                                  </TableCell>
+                                  <TableCell className="text-slate-600 text-sm">
+                                    <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-700">
+                                      {unit.torre || 'Única'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-slate-600 text-sm">
+                                    {unit.andar !== undefined && unit.andar !== null ? `${unit.andar}º andar` : '—'}
+                                  </TableCell>
+                                  <TableCell>
+                                    {ativos.length > 0 ? (
+                                      <div className="flex flex-wrap gap-1">
+                                        {ativos.map((m) => (
+                                          <Badge
+                                            key={m.id}
+                                            className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 font-normal text-xs"
+                                          >
+                                            {m.nome || m.email}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    ) : pendentes.length > 0 ? (
+                                      <Badge
+                                        variant="secondary"
+                                        className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50 text-xs"
+                                      >
+                                        {pendentes.length} pendente(s) de aprovação
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-xs text-slate-400 font-medium">Vago</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-right space-x-1">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => openEditUnitModal(unit)}
+                                      className="h-8 px-2 text-slate-600 hover:text-indigo-600 cursor-pointer"
+                                      title="Editar Unidade"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => setDeletingUnit(unit)}
+                                      className="h-8 px-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                      title="Excluir Unidade"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Visão Mobile (< 768px): Cards Táteis */}
+                      <div className="block md:hidden divide-y divide-slate-100 bg-white">
+                        {filteredUnitsList.map((unit) => {
+                          const { ativos, pendentes } = getMoradoresDaUnidade(unit.id);
+                          return (
+                            <div key={unit.id} className="p-4 space-y-2.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-slate-900 text-sm">
+                                    Apto {unit.numero}
+                                  </span>
+                                  <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-700 text-xs">
                                     {unit.torre || 'Única'}
                                   </Badge>
-                                </TableCell>
-                                <TableCell className="text-slate-600 text-sm">
-                                  {unit.andar !== undefined && unit.andar !== null ? `${unit.andar}º andar` : '—'}
-                                </TableCell>
-                                <TableCell>
-                                  {ativos.length > 0 ? (
-                                    <div className="flex flex-wrap gap-1">
-                                      {ativos.map((m) => (
-                                        <Badge
-                                          key={m.id}
-                                          className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 font-normal text-xs"
-                                        >
-                                          {m.nome || m.email}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  ) : pendentes.length > 0 ? (
-                                    <Badge
-                                      variant="secondary"
-                                      className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50 text-xs"
-                                    >
-                                      {pendentes.length} pendente(s) de aprovação
-                                    </Badge>
-                                  ) : (
-                                    <span className="text-xs text-slate-400 font-medium">Vago</span>
+                                  {unit.andar !== undefined && unit.andar !== null && (
+                                    <span className="text-xs text-slate-500">
+                                      {unit.andar}º andar
+                                    </span>
                                   )}
-                                </TableCell>
-                                <TableCell className="text-right space-x-1">
+                                </div>
+                                <div className="flex items-center gap-1">
                                   <Button
                                     size="sm"
-                                    variant="ghost"
+                                    variant="outline"
                                     onClick={() => openEditUnitModal(unit)}
-                                    className="h-8 px-2 text-slate-600 hover:text-indigo-600"
+                                    className="h-8 px-2.5 text-xs text-slate-600 border-slate-200 touch-target"
                                     title="Editar Unidade"
+                                    aria-label="Editar Unidade"
                                   >
                                     <Pencil className="h-3.5 w-3.5" />
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="ghost"
+                                    variant="outline"
                                     onClick={() => setDeletingUnit(unit)}
-                                    className="h-8 px-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                    className="h-8 px-2.5 text-xs text-rose-600 border-rose-200 hover:bg-rose-50 touch-target"
                                     title="Excluir Unidade"
+                                    aria-label="Excluir Unidade"
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
+                                </div>
+                              </div>
+
+                              <div className="pt-1">
+                                {ativos.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1 items-center">
+                                    <span className="text-[11px] text-slate-400 mr-1">Moradores:</span>
+                                    {ativos.map((m) => (
+                                      <Badge
+                                        key={m.id}
+                                        className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 font-normal text-xs"
+                                      >
+                                        {m.nome || m.email}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                ) : pendentes.length > 0 ? (
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50 text-xs"
+                                  >
+                                    {pendentes.length} pendente(s) de aprovação
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-slate-400 font-medium">Unidade vaga</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -1599,85 +1891,150 @@ export default function SindicaView() {
                     </div>
                   ) : (
                     <div className="border border-slate-100 rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader className="bg-slate-50">
-                          <TableRow>
-                            <TableHead>Chamado & Local</TableHead>
-                            <TableHead>Prioridade</TableHead>
-                            <TableHead>Responsável Atual</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Ação</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredOcorrenciasList.map((oc) => {
-                            const stCfg = getStatusConfig(oc.status);
-                            const rsCfg = getResponsavelConfig(oc.responsavelAtual);
-                            const precisaValidacao = oc.status === 'Aguardando Validação da Síndica';
+                      {/* Visão Desktop (>= 768px): Tabela Tradicional */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <Table>
+                          <TableHeader className="bg-slate-50">
+                            <TableRow>
+                              <TableHead>Chamado & Local</TableHead>
+                              <TableHead>Prioridade</TableHead>
+                              <TableHead>Responsável Atual</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead className="text-right">Ação</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredOcorrenciasList.map((oc) => {
+                              const stCfg = getStatusConfig(oc.status);
+                              const rsCfg = getResponsavelConfig(oc.responsavelAtual);
+                              const precisaValidacao = oc.status === 'Aguardando Validação da Síndica';
 
-                            return (
-                              <TableRow key={oc.id} className={`hover:bg-slate-50/60 ${precisaValidacao ? 'bg-purple-50/30' : ''}`}>
-                                <TableCell className="font-medium text-slate-800">
-                                  <div className="font-semibold text-slate-900">{oc.titulo}</div>
-                                  <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                                    <span className="font-medium text-slate-700">{oc.unidadeNome || 'Geral'}</span>
-                                    <span>•</span>
-                                    <span>{oc.autorNome || 'Morador'}</span>
-                                  </div>
-                                </TableCell>
+                              return (
+                                <TableRow key={oc.id} className={`hover:bg-slate-50/60 ${precisaValidacao ? 'bg-purple-50/30' : ''}`}>
+                                  <TableCell className="font-medium text-slate-800">
+                                    <div className="font-semibold text-slate-900">{oc.titulo}</div>
+                                    <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                                      <span className="font-medium text-slate-700">{oc.unidadeNome || 'Geral'}</span>
+                                      <span>•</span>
+                                      <span>{oc.autorNome || 'Morador'}</span>
+                                    </div>
+                                  </TableCell>
 
-                                <TableCell>
-                                  {oc.urgencia === 'Alta' && (
-                                    <Badge variant="destructive" className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200 text-xs font-semibold">
-                                      <AlertTriangle className="mr-1 h-3 w-3" /> Alta
-                                    </Badge>
-                                  )}
-                                  {oc.urgencia === 'Média' && (
-                                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200 text-xs font-medium">
-                                      Média
-                                    </Badge>
-                                  )}
-                                  {oc.urgencia === 'Baixa' && (
-                                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200 text-xs font-medium">
-                                      Baixa
-                                    </Badge>
-                                  )}
-                                  {!oc.urgencia && (
-                                    <span className="text-xs text-slate-400">Normal</span>
-                                  )}
-                                </TableCell>
+                                  <TableCell>
+                                    {oc.urgencia === 'Alta' && (
+                                      <Badge variant="destructive" className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200 text-xs font-semibold">
+                                        <AlertTriangle className="mr-1 h-3 w-3" /> Alta
+                                      </Badge>
+                                    )}
+                                    {oc.urgencia === 'Média' && (
+                                      <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200 text-xs font-medium">
+                                        Média
+                                      </Badge>
+                                    )}
+                                    {oc.urgencia === 'Baixa' && (
+                                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200 text-xs font-medium">
+                                        Baixa
+                                      </Badge>
+                                    )}
+                                    {!oc.urgencia && (
+                                      <span className="text-xs text-slate-400">Normal</span>
+                                    )}
+                                  </TableCell>
 
-                                <TableCell>
-                                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium border inline-flex items-center gap-1 ${rsCfg.bgClass} ${rsCfg.textClass} ${rsCfg.borderClass}`}>
-                                    {rsCfg.label}
-                                  </span>
-                                </TableCell>
+                                  <TableCell>
+                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border inline-flex items-center gap-1 ${rsCfg.bgClass} ${rsCfg.textClass} ${rsCfg.borderClass}`}>
+                                      {rsCfg.label}
+                                    </span>
+                                  </TableCell>
 
-                                <TableCell>
-                                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium border inline-flex items-center gap-1 ${stCfg.bgClass} ${stCfg.textClass} ${stCfg.borderClass}`}>
-                                    {stCfg.label}
-                                  </span>
-                                </TableCell>
+                                  <TableCell>
+                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border inline-flex items-center gap-1 ${stCfg.bgClass} ${stCfg.textClass} ${stCfg.borderClass}`}>
+                                      {stCfg.label}
+                                    </span>
+                                  </TableCell>
 
-                                <TableCell className="text-right">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => setSelectedOcorrencia(oc)}
-                                    className={`font-medium ${
-                                      precisaValidacao
-                                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                                    }`}
-                                  >
-                                    <FileText className="h-3.5 w-3.5 mr-1.5" />
-                                    {precisaValidacao ? 'Validar & Fechar' : 'Ver Trilha & Despachar'}
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
+                                  <TableCell className="text-right">
+                                    <Button
+                                      size="sm"
+                                      onClick={() => setSelectedOcorrencia(oc)}
+                                      className={`font-medium cursor-pointer ${
+                                        precisaValidacao
+                                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                          : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                      }`}
+                                    >
+                                      <FileText className="h-3.5 w-3.5 mr-1.5" />
+                                      {precisaValidacao ? 'Validar & Fechar' : 'Ver Trilha & Despachar'}
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Visão Mobile (< 768px): Cards Táteis */}
+                      <div className="block md:hidden divide-y divide-slate-100 bg-white">
+                        {filteredOcorrenciasList.map((oc) => {
+                          const stCfg = getStatusConfig(oc.status);
+                          const rsCfg = getResponsavelConfig(oc.responsavelAtual);
+                          const precisaValidacao = oc.status === 'Aguardando Validação da Síndica';
+
+                          return (
+                            <div
+                              key={oc.id}
+                              className={`p-4 space-y-3 ${precisaValidacao ? 'bg-purple-50/20' : ''}`}
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                                <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium border inline-flex items-center gap-1 ${stCfg.bgClass} ${stCfg.textClass} ${stCfg.borderClass}`}>
+                                  {stCfg.label}
+                                </span>
+                                {oc.urgencia === 'Alta' ? (
+                                  <Badge variant="destructive" className="bg-rose-100 text-rose-700 border-rose-200 text-[10px] font-semibold">
+                                    <AlertTriangle className="mr-1 h-3 w-3" /> Alta
+                                  </Badge>
+                                ) : oc.urgencia === 'Média' ? (
+                                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] font-medium">
+                                    Média
+                                  </Badge>
+                                ) : oc.urgencia === 'Baixa' ? (
+                                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-medium">
+                                    Baixa
+                                  </Badge>
+                                ) : null}
+                              </div>
+
+                              <div>
+                                <h4 className="font-bold text-slate-900 text-sm leading-snug">{oc.titulo}</h4>
+                                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                                  <span className="font-medium text-slate-700">{oc.unidadeNome || 'Geral'}</span>
+                                  <span>•</span>
+                                  <span>{oc.autorNome || 'Morador'}</span>
+                                </p>
+                              </div>
+
+                              <div className="flex items-center justify-between text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <span>Responsável atual:</span>
+                                <span className="font-medium text-slate-700">{rsCfg.label}</span>
+                              </div>
+
+                              <Button
+                                size="sm"
+                                onClick={() => setSelectedOcorrencia(oc)}
+                                className={`w-full h-10 font-semibold text-xs rounded-xl touch-target cursor-pointer justify-center ${
+                                  precisaValidacao
+                                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                }`}
+                              >
+                                <FileText className="h-4 w-4 mr-1.5" />
+                                {precisaValidacao ? 'Validar & Fechar' : 'Ver Trilha & Despachar'}
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -2097,137 +2454,251 @@ export default function SindicaView() {
                       </div>
                     ) : (
                       <div className="rounded-xl border border-slate-200 overflow-hidden">
-                        <Table>
-                          <TableHeader className="bg-slate-50">
-                            <TableRow>
-                              <TableHead>Morador</TableHead>
-                              <TableHead>Apartamento</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead className="text-right">Ações</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredMoradores.map((u) => {
-                              const st = resolveMoradorStatus(u);
-                              const stConfig = getMoradorStatusConfig(st);
-                              const uid = u.uid || u.id || '';
-                              const isLoadingItem = actionLoading === uid;
+                        {/* Visão Desktop (>= 768px): Tabela Tradicional */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <Table>
+                            <TableHeader className="bg-slate-50">
+                              <TableRow>
+                                <TableHead>Morador</TableHead>
+                                <TableHead>Apartamento</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredMoradores.map((u) => {
+                                const st = resolveMoradorStatus(u);
+                                const stConfig = getMoradorStatusConfig(st);
+                                const uid = u.uid || u.id || '';
+                                const isLoadingItem = actionLoading === uid;
 
-                              return (
-                                <TableRow key={uid} className="hover:bg-slate-50/60 transition-colors">
-                                  <TableCell>
-                                    <div className="flex items-center gap-3">
-                                      <div className="h-9 w-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs font-bold border border-indigo-100">
-                                        {(u.nome || 'M').charAt(0).toUpperCase()}
+                                return (
+                                  <TableRow key={uid} className="hover:bg-slate-50/60 transition-colors">
+                                    <TableCell>
+                                      <div className="flex items-center gap-3">
+                                        <div className="h-9 w-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs font-bold border border-indigo-100">
+                                          {(u.nome || 'M').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <p className="font-semibold text-slate-900 text-sm">{u.nome || 'Nome não informado'}</p>
+                                          <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                            <span>{u.email}</span>
+                                            {u.telefone && (
+                                              <>
+                                                <span className="text-slate-300">•</span>
+                                                <span className="text-slate-600 font-medium">{u.telefone}</span>
+                                              </>
+                                            )}
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <p className="font-semibold text-slate-900 text-sm">{u.nome || 'Nome não informado'}</p>
-                                        <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                                          <span>{u.email}</span>
-                                          {u.telefone && (
-                                            <>
-                                              <span className="text-slate-300">•</span>
-                                              <span className="text-slate-600 font-medium">{u.telefone}</span>
-                                            </>
-                                          )}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-700 text-xs font-medium">
-                                      <Home className="h-3 w-3 mr-1 text-slate-400" />
-                                      {u.unidadeNome || 'Não vinculado'}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline" className={`text-xs font-semibold ${stConfig.badgeClass} flex items-center gap-1.5 w-fit`}>
-                                      <span className={`h-1.5 w-1.5 rounded-full ${stConfig.dotClass}`} />
-                                      {stConfig.label}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-1.5">
-                                      {st === 'pendente' && (
-                                        <>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handleQuickStatusChange(uid, 'ativo')}
-                                            disabled={isLoadingItem}
-                                            className="h-7 px-2 text-xs font-semibold text-emerald-700 border-emerald-200 bg-emerald-50/40 hover:bg-emerald-100 cursor-pointer"
-                                            title="Aprovar e Liberar Acesso"
-                                          >
-                                            <Check className="h-3.5 w-3.5 mr-1" /> Aprovar
-                                          </Button>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline" className="bg-slate-50 border-slate-200 text-slate-700 text-xs font-medium">
+                                        <Home className="h-3 w-3 mr-1 text-slate-400" />
+                                        {u.unidadeNome || 'Não vinculado'}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline" className={`text-xs font-semibold ${stConfig.badgeClass} flex items-center gap-1.5 w-fit`}>
+                                        <span className={`h-1.5 w-1.5 rounded-full ${stConfig.dotClass}`} />
+                                        {stConfig.label}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex items-center justify-end gap-1.5">
+                                        {st === 'pendente' && (
+                                          <>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => handleQuickStatusChange(uid, 'ativo')}
+                                              disabled={isLoadingItem}
+                                              className="h-7 px-2 text-xs font-semibold text-emerald-700 border-emerald-200 bg-emerald-50/40 hover:bg-emerald-100 cursor-pointer"
+                                              title="Aprovar e Liberar Acesso"
+                                            >
+                                              <Check className="h-3.5 w-3.5 mr-1" /> Aprovar
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={() => setRejectingMorador(u)}
+                                              disabled={isLoadingItem}
+                                              className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                              title="Recusar Acesso"
+                                            >
+                                              <X className="h-3.5 w-3.5 mr-1" /> Recusar
+                                            </Button>
+                                          </>
+                                        )}
+
+                                        {st === 'ativo' && (
                                           <Button
                                             size="sm"
                                             variant="ghost"
-                                            onClick={() => setRejectingMorador(u)}
+                                            onClick={() => handleQuickStatusChange(uid, 'inativo')}
                                             disabled={isLoadingItem}
-                                            className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 cursor-pointer"
-                                            title="Recusar Acesso"
+                                            className="h-7 px-2 text-xs text-slate-500 hover:text-amber-700 hover:bg-amber-50 cursor-pointer"
+                                            title="Suspender Acesso Temporariamente"
                                           >
-                                            <X className="h-3.5 w-3.5 mr-1" /> Recusar
+                                            <UserX className="h-3.5 w-3.5 mr-1 text-amber-600" /> Suspender
                                           </Button>
-                                        </>
-                                      )}
+                                        )}
 
-                                      {st === 'ativo' && (
+                                        {st === 'inativo' && (
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleQuickStatusChange(uid, 'ativo')}
+                                            disabled={isLoadingItem}
+                                            className="h-7 px-2 text-xs text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+                                            title="Reativar Acesso do Morador"
+                                          >
+                                            <UserCheck className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Reativar
+                                          </Button>
+                                        )}
+
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => openEditMorador(u)}
+                                          disabled={isLoadingItem}
+                                          className="h-7 px-2.5 text-xs font-semibold border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 cursor-pointer"
+                                          title="Editar Dados Cadastrais e Unidade"
+                                        >
+                                          <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+                                        </Button>
+
                                         <Button
                                           size="sm"
                                           variant="ghost"
-                                          onClick={() => handleQuickStatusChange(uid, 'inativo')}
+                                          onClick={() => setDeletingMorador(u)}
                                           disabled={isLoadingItem}
-                                          className="h-7 px-2 text-xs text-slate-500 hover:text-amber-700 hover:bg-amber-50 cursor-pointer"
-                                          title="Suspender Acesso Temporariamente"
+                                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                          title="Excluir Morador do Condomínio"
+                                          aria-label="Excluir Morador"
                                         >
-                                          <UserX className="h-3.5 w-3.5 mr-1 text-amber-600" /> Suspender
+                                          <Trash2 className="h-3.5 w-3.5" />
                                         </Button>
-                                      )}
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
 
-                                      {st === 'inativo' && (
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => handleQuickStatusChange(uid, 'ativo')}
-                                          disabled={isLoadingItem}
-                                          className="h-7 px-2 text-xs text-emerald-700 hover:bg-emerald-50 cursor-pointer"
-                                          title="Reativar Acesso do Morador"
-                                        >
-                                          <UserCheck className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Reativar
-                                        </Button>
-                                      )}
+                        {/* Visão Mobile (< 768px): Cards Táteis com Gestão Completa */}
+                        <div className="block md:hidden divide-y divide-slate-100 bg-white">
+                          {filteredMoradores.map((u) => {
+                            const st = resolveMoradorStatus(u);
+                            const stConfig = getMoradorStatusConfig(st);
+                            const uid = u.uid || u.id || '';
+                            const isLoadingItem = actionLoading === uid;
 
+                            return (
+                              <div key={uid} className="p-4 space-y-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="h-9 w-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs font-bold border border-indigo-100 shrink-0">
+                                      {(u.nome || 'M').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-slate-900 text-sm leading-snug">{u.nome || 'Nome não informado'}</p>
+                                      <p className="text-xs text-slate-500 mt-0.5">{u.email}</p>
+                                      {u.telefone && (
+                                        <p className="text-[11px] text-slate-600 font-medium mt-0.5">{u.telefone}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className={`text-[11px] font-semibold ${stConfig.badgeClass} flex items-center gap-1 shrink-0`}>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${stConfig.dotClass}`} />
+                                    {stConfig.label}
+                                  </Badge>
+                                </div>
+
+                                <div className="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                  <span className="text-slate-500">Apartamento:</span>
+                                  <span className="font-semibold text-slate-800 flex items-center gap-1">
+                                    <Home className="h-3.5 w-3.5 text-indigo-500" />
+                                    {u.unidadeNome || 'Não vinculado'}
+                                  </span>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                  {st === 'pendente' && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleQuickStatusChange(uid, 'ativo')}
+                                        disabled={isLoadingItem}
+                                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 font-semibold rounded-lg touch-target justify-center"
+                                      >
+                                        <Check className="h-3.5 w-3.5 mr-1" /> Aprovar
+                                      </Button>
                                       <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => openEditMorador(u)}
+                                        onClick={() => setRejectingMorador(u)}
                                         disabled={isLoadingItem}
-                                        className="h-7 px-2.5 text-xs font-semibold border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 cursor-pointer"
-                                        title="Editar Dados Cadastrais e Unidade"
+                                        className="text-rose-600 border-rose-200 hover:bg-rose-50 text-xs h-9 rounded-lg touch-target justify-center"
                                       >
-                                        <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+                                        <X className="h-3.5 w-3.5 mr-1" /> Recusar
                                       </Button>
+                                    </>
+                                  )}
 
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => setDeletingMorador(u)}
-                                        disabled={isLoadingItem}
-                                        className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
-                                        title="Excluir Morador do Condomínio"
-                                        aria-label="Excluir Morador"
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
+                                  {st === 'ativo' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleQuickStatusChange(uid, 'inativo')}
+                                      disabled={isLoadingItem}
+                                      className="text-amber-700 border-amber-200 hover:bg-amber-50 text-xs h-9 rounded-lg touch-target"
+                                    >
+                                      <UserX className="h-3.5 w-3.5 mr-1" /> Suspender
+                                    </Button>
+                                  )}
+
+                                  {st === 'inativo' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleQuickStatusChange(uid, 'ativo')}
+                                      disabled={isLoadingItem}
+                                      className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 text-xs h-9 rounded-lg touch-target"
+                                    >
+                                      <UserCheck className="h-3.5 w-3.5 mr-1" /> Reativar
+                                    </Button>
+                                  )}
+
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openEditMorador(u)}
+                                    disabled={isLoadingItem}
+                                    className="flex-1 border-slate-300 text-slate-700 text-xs h-9 font-semibold rounded-lg touch-target justify-center"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5 mr-1" /> Editar
+                                  </Button>
+
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setDeletingMorador(u)}
+                                    disabled={isLoadingItem}
+                                    className="h-9 w-9 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 touch-target"
+                                    title="Excluir Morador"
+                                    aria-label="Excluir Morador"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </CardContent>

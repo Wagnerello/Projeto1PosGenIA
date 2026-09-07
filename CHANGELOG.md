@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.4] - 2026-09-07
+
+### Responsividade Mobile e Navegação
+- **Menu gaveta para Síndica e Super Admin:** Em telas de celulares, as abas de navegação foram reunidas em um menu lateral acessível pelo ícone no topo, deixando a visualização limpa e com acesso rápido a todos os módulos.
+- **Barra de navegação inferior para o Morador:** No celular, a visão do morador conta com barra fixa na base da tela para alternar entre histórico, mural e o botão central de nova ocorrência.
+- **Remoção de botões redundantes:** Eliminados botões duplicados de criação nas listas vazias do morador, no cabeçalho e na administração, padronizando um único caminho para cada ação.
+- **Áreas de toque confortáveis:** Formulários, botões de ação e itens de navegação foram ajustados com altura mínima de 44px para toques precisos em telas de smartphones.
+- **Ajustes de tela cheia para celular:** Telas de login e cadastro agora se adaptam com folga às barras de navegação do iOS e Android, sem cortes ou rolagens indesejadas.
+
+---
+
 ## [1.1.3] - 2026-09-07
 
 ### Melhorias de Usabilidade e Interface

@@ -182,7 +182,7 @@ export function NovaPublicacaoJanela({
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden animate-in fade-in duration-200">
       {/* Barra Superior da Janela */}
-      <div className="px-6 py-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-4">
+      <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3">
           <Button
             type="button"
@@ -190,21 +190,21 @@ export function NovaPublicacaoJanela({
             size="sm"
             onClick={onVoltar}
             disabled={salvando}
-            className="text-slate-300 hover:text-white hover:bg-slate-800 -ml-2 cursor-pointer"
+            className="text-slate-300 hover:text-white hover:bg-slate-800 -ml-1 sm:-ml-2 cursor-pointer min-h-[44px] sm:min-h-[36px] px-3"
           >
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            <ArrowLeft className="h-4 w-4 mr-1.5 shrink-0" />
             <span>Voltar ao Mural</span>
           </Button>
           <div className="h-5 w-px bg-slate-700 hidden sm:block" />
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
               <Megaphone className="h-4 w-4" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-white leading-tight">
                 {isEditing ? 'Editar Comunicado Oficial' : 'Redigir Novo Comunicado'}
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-400 hidden sm:block">
                 {isEditing
                   ? 'Atualize os dados e o direcionamento do aviso aos moradores'
                   : 'Ambiente de redação com calibração inteligente de tom'}
@@ -213,25 +213,25 @@ export function NovaPublicacaoJanela({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-800">
           {rascunhoOriginalSalvo && (
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleRestaurarRascunho}
-              className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer h-8"
+              className="text-xs border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer min-h-[44px] sm:min-h-[36px] flex-1 sm:flex-none"
               title="Restaurar o rascunho anterior à sugestão da IA"
             >
               <RotateCcw className="h-3.5 w-3.5 mr-1" />
-              <span>Desfazer Alterações</span>
+              <span>Desfazer</span>
             </Button>
           )}
           <Button
             type="button"
             onClick={handleSubmit}
             disabled={salvando || !titulo.trim() || !mensagem.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold h-8 px-4 shadow-sm cursor-pointer flex items-center gap-1.5"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold min-h-[44px] sm:min-h-[36px] px-4 shadow-sm cursor-pointer flex items-center justify-center gap-1.5 flex-1 sm:flex-none"
           >
             {salvando ? (
               <>
@@ -241,7 +241,7 @@ export function NovaPublicacaoJanela({
             ) : (
               <>
                 {isEditing ? <Check className="h-3.5 w-3.5" /> : <Send className="h-3.5 w-3.5" />}
-                <span>{isEditing ? 'Salvar Alterações' : 'Publicar no Mural'}</span>
+                <span>{isEditing ? 'Salvar' : 'Publicar no Mural'}</span>
               </>
             )}
           </Button>
@@ -376,7 +376,7 @@ export function NovaPublicacaoJanela({
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
                 placeholder="Ex: Manutenção na Caixa d'Água amanhã"
-                className="text-sm font-semibold text-slate-900 border-slate-200 focus:ring-2 focus:ring-indigo-500 h-10"
+                className="text-base sm:text-sm font-semibold text-slate-900 border-slate-200 focus:ring-2 focus:ring-indigo-500 h-11 sm:h-10"
               />
             </div>
 
@@ -394,7 +394,7 @@ export function NovaPublicacaoJanela({
                 onChange={(e) => setMensagem(e.target.value)}
                 placeholder="Escreva livremente o que você precisa comunicar. Não se preocupe se tiver erros de digitação ou informalidade, a IA pode refinar e corrigir tudo no tom desejado..."
                 rows={6}
-                className="w-full text-sm border border-slate-200 rounded-xl p-3.5 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y leading-relaxed"
+                className="w-full text-base sm:text-sm border border-slate-200 rounded-xl p-3.5 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y leading-relaxed"
               />
             </div>
           </div>
@@ -422,7 +422,7 @@ export function NovaPublicacaoJanela({
                     key={t}
                     type="button"
                     onClick={() => setTom(t)}
-                    className={`p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                    className={`p-2.5 sm:p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[52px] sm:min-h-auto ${
                       isSelected
                         ? 'border-indigo-600 bg-white text-indigo-950 font-bold ring-2 ring-indigo-500/20 shadow-xs'
                         : 'border-slate-200 bg-white/70 hover:bg-white text-slate-600'
@@ -444,7 +444,7 @@ export function NovaPublicacaoJanela({
                 type="button"
                 onClick={handleGerarSugestaoIA}
                 disabled={gerandoSugestao || (!titulo.trim() && !mensagem.trim())}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-9 px-4 shadow-sm cursor-pointer flex items-center gap-2"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs min-h-[44px] sm:min-h-[36px] w-full sm:w-auto px-4 shadow-sm cursor-pointer flex items-center justify-center gap-2"
               >
                 {gerandoSugestao ? (
                   <>

@@ -168,29 +168,29 @@ export function OcorrenciaTimelineJanela({
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Barra de Navegação Superior Integrada */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 md:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onVoltar}
-              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold"
+              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold min-h-[44px] sm:min-h-[36px] px-3.5"
             >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              <ArrowLeft className="h-4 w-4 mr-1.5 shrink-0" />
               Voltar à Lista
             </Button>
             <span className="text-xs font-mono font-semibold tracking-wider text-slate-400 uppercase">
               Ocorrência #{ocorrencia.id?.substring(0, 8)}
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white">
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white break-words">
             {ocorrencia.titulo}
           </h2>
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
             <span className="inline-flex items-center gap-1 font-medium text-slate-200">
-              <Building2 className="h-3.5 w-3.5 text-indigo-400" />
+              <Building2 className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
               {ocorrencia.unidadeNome || 'Unidade'}
             </span>
             <span>•</span>
@@ -206,15 +206,15 @@ export function OcorrenciaTimelineJanela({
 
         {/* Badges de Status e Responsabilidade */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${statusCfg.bgClass} ${statusCfg.textClass} ${statusCfg.borderClass}`}>
+          <span className={`text-xs px-3 py-1.5 rounded-full font-semibold border ${statusCfg.bgClass} ${statusCfg.textClass} ${statusCfg.borderClass}`}>
             {statusCfg.label}
           </span>
-          <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${respCfg.bgClass} ${respCfg.textClass} ${respCfg.borderClass}`}>
+          <span className={`text-xs px-3 py-1.5 rounded-full font-semibold border ${respCfg.bgClass} ${respCfg.textClass} ${respCfg.borderClass}`}>
             Responsável: {respCfg.label}
           </span>
           {ocorrencia.urgencia === 'Alta' && (
-            <Badge variant="destructive" className="bg-rose-500/20 text-rose-300 border border-rose-400/40 text-xs font-semibold">
-              <AlertTriangle className="mr-1 h-3 w-3" /> Alta Prioridade
+            <Badge variant="destructive" className="bg-rose-500/20 text-rose-300 border border-rose-400/40 text-xs font-semibold py-1">
+              <AlertTriangle className="mr-1 h-3 w-3 shrink-0" /> Alta Prioridade
             </Badge>
           )}
         </div>
@@ -326,7 +326,7 @@ export function OcorrenciaTimelineJanela({
                               value={motivoReabertura}
                               onChange={(e) => setMotivoReabertura(e.target.value)}
                               placeholder="Descreva por que o atendimento está sendo reaberto..."
-                              className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                              className="w-full p-3 rounded-xl border border-slate-200 bg-white text-base sm:text-xs focus:outline-hidden focus:ring-2 focus:ring-amber-500"
                               required
                             />
                           </div>
@@ -338,7 +338,7 @@ export function OcorrenciaTimelineJanela({
                             <select
                               value={responsavelReabertura}
                               onChange={(e) => setResponsavelReabertura(e.target.value as ResponsavelOcorrencia)}
-                              className="w-full text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white font-medium text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                              className="w-full text-base sm:text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white font-medium text-slate-700 shadow-2xs min-h-[44px] sm:min-h-[36px] focus:outline-hidden focus:ring-2 focus:ring-amber-500"
                             >
                               <option value="Síndica">Síndica / Administração</option>
                               <option value="Zeladoria">Zeladoria</option>
@@ -347,13 +347,14 @@ export function OcorrenciaTimelineJanela({
                             </select>
                           </div>
 
-                          <div className="flex justify-end gap-2 pt-2">
+                          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() => setReabrirFormOpen(false)}
                               disabled={submitting}
+                              className="min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
                             >
                               Cancelar
                             </Button>
@@ -361,7 +362,7 @@ export function OcorrenciaTimelineJanela({
                               type="submit"
                               size="sm"
                               disabled={submitting}
-                              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+                              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
                             >
                               {submitting ? (
                                 <>
@@ -407,7 +408,7 @@ export function OcorrenciaTimelineJanela({
                       value={relato}
                       onChange={(e) => setRelato(e.target.value)}
                       placeholder="Descreva as providências adotadas, laudos recebidos ou orientações para a equipe e morador..."
-                      className="w-full p-3.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                      className="w-full p-3.5 rounded-xl border border-slate-200 bg-white text-base sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
                       required
                     />
                   </div>
@@ -420,7 +421,7 @@ export function OcorrenciaTimelineJanela({
                       <select
                         value={novoResponsavel}
                         onChange={(e) => setNovoResponsavel(e.target.value as ResponsavelOcorrencia)}
-                        className="w-full text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white font-medium text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                        className="w-full text-base sm:text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white font-medium text-slate-700 shadow-2xs min-h-[44px] sm:min-h-[36px] focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="Síndica">Síndica / Administração</option>
                         <option value="Zeladoria">Zeladoria</option>
@@ -436,7 +437,7 @@ export function OcorrenciaTimelineJanela({
                       <select
                         value={novoStatus}
                         onChange={(e) => setNovoStatus(e.target.value as StatusOcorrencia)}
-                        className="w-full text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white font-medium text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                        className="w-full text-base sm:text-xs border border-slate-200 rounded-xl px-3 py-2.5 bg-white font-medium text-slate-700 shadow-2xs min-h-[44px] sm:min-h-[36px] focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="Pendente">Pendente</option>
                         <option value="Em Atendimento">Em Atendimento</option>
@@ -455,13 +456,13 @@ export function OcorrenciaTimelineJanela({
                         variant="outline"
                         onClick={handleFinalizarEfetivo}
                         disabled={submitting}
-                        className="w-full sm:w-auto text-emerald-700 border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 text-xs font-semibold"
+                        className="w-full sm:w-auto text-emerald-700 border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 text-xs font-semibold min-h-[44px] sm:min-h-[36px]"
                       >
                         <CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-600" />
                         Homologar e Fechar Atendimento
                       </Button>
                     ) : (
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-slate-400 text-center sm:text-left">
                         Apenas a administração homologa o encerramento.
                       </span>
                     )}
@@ -469,7 +470,7 @@ export function OcorrenciaTimelineJanela({
                     <Button
                       type="submit"
                       disabled={submitting}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto text-xs font-semibold shadow-md shadow-indigo-100"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto text-xs font-semibold shadow-md shadow-indigo-100 min-h-[44px] sm:min-h-[36px]"
                     >
                       {submitting ? (
                         <>
@@ -594,14 +595,14 @@ export function OcorrenciaTimelineJanela({
 
       {/* Modal: Confirmar Encerramento de Ocorrência (Substitui confirm do browser) */}
       {confirmarEncerramentoModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4 animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200 pb-safe">
             <div className="flex items-center gap-3 text-emerald-600">
-              <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Homologar Encerramento</h3>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">Homologar Encerramento</h3>
                 <p className="text-xs text-slate-500">Conclusão Definitiva do Chamado</p>
               </div>
             </div>
@@ -617,13 +618,13 @@ export function OcorrenciaTimelineJanela({
               Deseja fechar este chamado como <strong>Resolvido</strong>? Esta ação homologa que os serviços foram prestados e conclui o atendimento.
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setConfirmarEncerramentoModal(false)}
                 disabled={submitting}
-                className="cursor-pointer text-xs"
+                className="cursor-pointer text-xs w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 Cancelar
               </Button>
@@ -631,7 +632,7 @@ export function OcorrenciaTimelineJanela({
                 type="button"
                 onClick={handleExecutarEncerramento}
                 disabled={submitting}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer text-xs flex items-center gap-1.5"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 {submitting ? (
                   <>

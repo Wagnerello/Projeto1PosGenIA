@@ -57,25 +57,25 @@ export function NovaOcorrenciaJanela({
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Topbar Integrada */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 md:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={onVoltar}
-              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold"
+              className="bg-slate-800/80 hover:bg-slate-700 text-white border-slate-700 hover:text-white transition-all text-xs font-semibold min-h-[44px] sm:min-h-[36px] px-3.5"
             >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              <ArrowLeft className="h-4 w-4 mr-1.5 shrink-0" />
               Voltar para Minhas Ocorrências
             </Button>
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               Novo Chamado
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <FileText className="h-5 w-5 text-indigo-400" />
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <FileText className="h-5 w-5 text-indigo-400 shrink-0" />
             Registrar Nova Ocorrência
           </h2>
           <p className="text-xs text-slate-300">
@@ -97,7 +97,7 @@ export function NovaOcorrenciaJanela({
       {/* Grid de 2 Colunas */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Coluna 1 (7 colunas): Formulário de Registro */}
-        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
+        <div className="lg:col-span-7 bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-6">
           <div className="pb-3 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 text-base">
               Detalhes do Chamado
@@ -125,7 +125,7 @@ export function NovaOcorrenciaJanela({
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
                 required
-                className="rounded-xl border-slate-200 text-sm font-semibold"
+                className="rounded-xl border-slate-200 text-base sm:text-sm font-semibold h-11 sm:h-10"
               />
               <p className="text-[11px] text-slate-400">
                 Um título objetivo facilita o direcionamento e atendimento pela equipe.
@@ -148,24 +148,24 @@ export function NovaOcorrenciaJanela({
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 required
-                className="w-full p-3.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 transition-all leading-relaxed"
+                className="w-full p-3.5 rounded-xl border border-slate-200 bg-white text-base sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 transition-all leading-relaxed"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-100">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onVoltar}
                 disabled={submitting}
-                className="text-xs font-semibold border-slate-200"
+                className="text-xs font-semibold border-slate-200 w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-100"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-100 w-full sm:w-auto min-h-[44px] sm:min-h-[36px]"
               >
                 {submitting ? (
                   <>

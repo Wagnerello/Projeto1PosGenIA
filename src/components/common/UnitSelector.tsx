@@ -248,29 +248,29 @@ export function UnitSelector({
         </button>
       </div>
 
-      {/* DIÁLOGO MODAL: Escolha Rápida e Focada */}
+      {/* DIÁLOGO MODAL: Bottom Sheet no Mobile, Dialog Central no Desktop */}
       {isOpen && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in-0 duration-150"
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in-0 duration-150"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsOpen(false);
           }}
         >
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150">
+          <div className="w-full max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[85vh] animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200 pb-safe sm:pb-0">
             {/* Header do Modal */}
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 id="modal-title" className="text-base font-bold text-slate-900">
+                  <h3 id="modal-title" className="text-sm sm:text-base font-bold text-slate-900">
                     Escolha seu Apartamento
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[11px] sm:text-xs text-slate-500">
                     {unidades.length} unidades cadastradas no condomínio
                   </p>
                 </div>
@@ -280,22 +280,22 @@ export function UnitSelector({
                 type="button"
                 onClick={() => setIsOpen(false)}
                 aria-label="Fechar"
-                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer touch-target"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Barra de Pesquisa */}
-            <div className="p-4 pb-2 space-y-3 border-b border-slate-100 bg-white">
+            {/* Barra de Busca e Filtros */}
+            <div className="p-3.5 sm:p-4 border-b border-slate-100 space-y-2.5 bg-white">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
                 <Input
                   type="text"
-                  placeholder="Buscar pelo número (ex: 201) ou bloco..."
+                  placeholder="Buscar por número (ex: 101, 302)..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 pr-8 h-10 bg-slate-50 border-slate-200 rounded-xl text-sm focus:bg-white"
+                  className="pl-9 h-11 sm:h-10 text-base sm:text-sm bg-slate-50 border-slate-200 rounded-xl"
                   autoFocus
                 />
                 {search && (
@@ -303,7 +303,7 @@ export function UnitSelector({
                     type="button"
                     onClick={() => setSearch('')}
                     aria-label="Limpar busca"
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2.5 top-2.5 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 touch-target"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -312,13 +312,13 @@ export function UnitSelector({
 
               {/* Filtro por Torres / Blocos */}
               {torres.length > 1 && (
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
                   <button
                     type="button"
                     onClick={() => setActiveTorre('all')}
-                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors min-h-[32px] cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors min-h-[36px] cursor-pointer touch-target ${
                       activeTorre === 'all'
-                        ? 'bg-indigo-600 text-white shadow-sm'
+                        ? 'bg-indigo-600 text-white shadow-xs'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
