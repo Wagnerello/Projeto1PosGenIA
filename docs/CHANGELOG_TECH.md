@@ -3,6 +3,8 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+- [docs] atualizar README com foco em livro digital de ocorrencias, arquitetura multi-provedor de IA e remocao de slop (commit: pending) — Refs: nenhuma
+- [feat] feat: reforco de seguranca (regras e sanitizador) e correcoes de bugs (commit: 3461e18) — Refs: nenhuma
 
 ## [v1.1.5] - 2026-09-07
 - [feat] security hardening (rules + input sanitizer) and bug fixes (commit: pending) — Refs: 007

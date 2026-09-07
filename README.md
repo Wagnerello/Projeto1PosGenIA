@@ -1,50 +1,53 @@
-# Sistema de Gestão Condominial com Triagem Inteligente via IA
+# Livro Digital de Ocorrências Condominiais com Triagem via IA
 
-> **Projeto 1 — Pós-Graduação em Engenharia de Inteligência Artificial**  
-> Aplicação web para registro e gestão de ocorrências condominiais com classificação automática de urgência por IA e mural comunitário de avisos.
+> Projeto 1 da Pós-Graduação em Engenharia de Inteligência Artificial.  
+> Aplicação web para registro de ocorrências condominiais, classificação de urgência por modelos de linguagem e mural de comunicados.
 
 ---
 
 ## 1. O que o projeto resolve?
 
-Em condomínios residenciais e comerciais, o fluxo tradicional de comunicação de problemas (livros físicos na portaria, mensagens dispersas em aplicativos de mensagens ou e-mails) gera atrasos na triagem de incidentes críticos, falta de rastreabilidade para os moradores e sobrecarga na gestão da síndica e da equipe de manutenção.
+O registro de problemas prediais em cadernos de portaria ou mensagens soltas de aplicativos gera perda de histórico, atraso no atendimento de emergências e falta de retorno aos moradores.
 
-Este projeto resolve esse gargalo através de:
-- **Centralização do Livro de Ocorrências:** Canal unificado para moradores registrarem chamados com descrição detalhada e categorização.
-- **Triagem e Priorização Inteligente com IA:** O texto da ocorrência é avaliado semanticamente por um modelo de IA via **Groq** (inferência de altíssima velocidade utilizando LLMs como Llama 3), que classifica o grau de urgência (**Baixa, Média, Alta ou Crítica**), permitindo que a administração atue prioritariamente em falhas graves (vazamentos, panes elétricas, segurança) antes de demandas rotineiras.
-- **Controle de Acesso por Papéis (RBAC):**
-  - **Morador:** Registra ocorrências da sua unidade e acompanha o histórico e status exclusivamente dos seus chamados, além de visualizar o Mural de Avisos.
-  - **Síndica / Administração:** Visualiza todas as ocorrências com a urgência atribuída pela IA, altera status e publica comunicados oficiais no mural.
-  - **Zelador / Portaria:** Acessa chamados operacionais para atualização de status conforme execução dos reparos.
-- **Mural de Avisos Oficial:** Espaço em tempo real para avisos de manutenções preventivas, convocações de assembleias e informes gerais.
+A aplicação resolve esse problema com:
+- **Registro unificado de chamados:** Moradores abrem ocorrências com título, descrição detalhada, categoria e acompanham o status em tempo real.
+- **Classificação de urgência por IA:** O texto da ocorrência é enviado para modelos de linguagem (Groq Cloud/Llama 3 ou Google Gemini), que definem o nível de urgência (Baixa, Média ou Alta) e geram uma justificativa técnica curta para a equipe do condomínio. Caso a rede ou as APIs falhem, um mecanismo determinístico local assume a classificação com base em regras predefinidas.
+- **Assistente para comunicados:** A administração digita um rascunho de aviso e seleciona o tom desejado (formal, educativo, firme, direto ou acolhedor). O sistema gera uma sugestão revisada usando Gemini ou Groq, mantendo um motor determinístico local como reserva.
+- **Controle de acesso por papel:**
+  - **Morador:** Registra chamados da própria unidade, consulta o histórico pessoal e lê os avisos do mural.
+  - **Síndica / Administração:** Gerencia ocorrências filtradas por urgência, renomeia blocos com atualização em cascata, aprova novos moradores e publica avisos.
+  - **Super Admin:** Cadastra condomínios, gera chaves de acesso, acompanha métricas operacionais e exporta links de cadastro com QR Code.
+  - **Zelador / Portaria:** Visualiza as demandas do condomínio e altera o status das tarefas em execução.
+- **Mural de comunicados:** Painel de recados oficiais para avisos de manutenção, regras e assembleias.
+- **Navegação móvel dedicada:** Interface com menu lateral retrátil para gestão e barra de navegação inferior para moradores em telas pequenas.
 
 ---
 
 ## 2. Como instalar e executar?
 
 ### Pré-requisitos
-- **Node.js** (versão 18 LTS ou superior, recomendado Node.js 20+)
-- **npm** (ou gerenciador de pacotes equivalente como yarn ou pnpm)
+- Node.js 18 LTS ou superior (recomendado 20+)
+- npm 9 ou superior
 
-### Passo a passo de instalação
+### Instalação
 
-1. **Clonar o repositório:**
+1. Clone o repositório:
    ```bash
    git clone <URL_DO_REPOSITORIO>
    cd Projeto1PosEngIA
    ```
 
-2. **Instalar as dependências:**
+2. Instale as dependências:
    ```bash
    npm install
    ```
 
-3. **Configurar as variáveis de ambiente:**
-   Crie um arquivo `.env` na raiz do projeto a partir do modelo `.env.example`:
+3. Configure as variáveis de ambiente:
+   Crie o arquivo `.env` a partir do modelo `.env.example`:
    ```bash
    cp .env.example .env
    ```
-   Preencha as credenciais do seu projeto Firebase e a chave de API do Groq no arquivo `.env`:
+   Preencha as credenciais do Firebase, as chaves de API dos provedores de IA e o e-mail do administrador:
    ```env
    VITE_FIREBASE_API_KEY="sua_api_key"
    VITE_FIREBASE_AUTH_DOMAIN="seu_projeto.firebaseapp.com"
@@ -53,19 +56,21 @@ Este projeto resolve esse gargalo através de:
    VITE_FIREBASE_MESSAGING_SENDER_ID="seu_sender_id"
    VITE_FIREBASE_APP_ID="seu_app_id"
    VITE_GROQ_API_KEY="gsk_sua_chave_groq"
+   VITE_GEMINI_API_KEY="sua_chave_gemini"
+   VITE_SUPERADMIN_EMAIL="admin@empresa.com"
    ```
 
-4. **Executar em modo de desenvolvimento:**
+4. Inicie o servidor de desenvolvimento:
    ```bash
    npm run dev
    ```
-   A aplicação estará acessível em `http://localhost:5173`.
+   A aplicação roda por padrão em `http://localhost:5173`.
 
-5. **Gerar build para produção:**
+5. Gere o pacote de produção:
    ```bash
    npm run build
    ```
-   Para testar o build localmente:
+   Para testar a versão compilada localmente:
    ```bash
    npm run preview
    ```
@@ -74,66 +79,67 @@ Este projeto resolve esse gargalo através de:
 
 ## 3. Como rodar testes e validações?
 
-O projeto possui esteira de qualidade com testes automatizados, verificação estática e gates de integridade técnica.
+O repositório possui suíte de testes unitários, análise estática e travas no Git para impedir envio de código quebrado:
 
-- **Executar a suíte de testes unitários (Vitest):**
+- **Executar testes unitários (Vitest):**
   ```bash
   npm test
   ```
+  Executa os 141 testes automatizados cobrindo regras de negócio, ordenação, sanitização e fallbacks.
 
-- **Executar testes em modo interativo / contínuo (Watch):**
+- **Executar testes em modo contínuo (Watch):**
   ```bash
   npx vitest
   ```
 
-- **Executar a auditoria completa da esteira (SAST, Governança, Testes e Segurança):**
+- **Executar a auditoria completa da esteira:**
   ```bash
   npm run audit:all
   ```
-  *(Ou diretamente via `node scripts/audit-esteira.mjs .`)*
+  *(Equivalente a `node scripts/audit-esteira.mjs .`)*
 
-- **Executar a análise estática de código (Linter):**
+- **Executar linter (ESLint 9):**
   ```bash
   npm run lint
   ```
+  - Verificação com checagem de tipos: `npm run lint:types`
+  - Verificação rápida via Oxlint: `npm run lint:ox`
 
-### Mecanismos de Governança e Git Hooks (Husky)
-- `pre-commit`: Executa testes automatizados e varredura estática antes de permitir a confirmação de código.
-- `commit-msg`: Valida o padrão **Conventional Commits** (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`, etc.).
-- `post-commit`: Atualiza automaticamente a memória técnica do projeto em `docs/CHANGELOG_TECH.md` na seção `[Unreleased]`.
+### Travas no Git (Husky)
+- `pre-commit`: Executa a suíte de testes e o linter antes de autorizar o commit.
+- `commit-msg`: Valida se a mensagem segue o padrão Conventional Commits (`feat:`, `fix:`, `docs:`, etc.).
+- `post-commit`: Insere o registro técnico da alteração em `docs/CHANGELOG_TECH.md` na seção `[Unreleased]`.
 
 ---
 
 ## 4. Quais limites existem?
 
-O escopo atual do MVP possui os seguintes limites técnicos e operacionais:
-
-1. **Dependência de Conectividade com a API de IA:** A classificação automática de urgência depende da disponibilidade e latência do serviço do Groq Cloud. Caso haja indisponibilidade de rede ou erro na requisição, o chamado é registrado com status padrão pendente de triagem.
-2. **Cotas de Requisição (Rate Limits do Groq):** O processamento de inferência está condicionado aos limites de requisições por minuto (RPM) e tokens por minuto (TPM) da camada de uso da API do Groq.
-3. **Persistência Offline:** A sincronização de dados exige conexão ativa com o Firebase Firestore; operações offline com fila de sincronização em segundo plano não estão contempladas neste MVP.
-4. **Armazenamento de Anexos Pesados:** A versão inicial prioriza dados textuais estruturados e categorização, não incluindo envio de vídeos em alta resolução no formulário de ocorrências.
-5. **Regras de Segurança no Backend (Firestore Rules):** O isolamento estrito de dados entre moradores e administração depende da correta aplicação das regras de segurança configuradas no Firebase Console / CLI.
+1. **Dependência de conexão para chamadas de IA:** A classificação por modelos generativos exige internet e resposta das APIs externas (Groq ou Gemini). Quando houver falha de rede ou cota excedida, o sistema ativa o motor determinístico local.
+2. **Limites de requisições (Rate Limits):** As chamadas estão restritas às cotas de RPM e TPM das chaves configuradas em cada provedor.
+3. **Persistência estritamente online:** A aplicação grava e lê dados diretamente no Cloud Firestore. Não há fila local para sincronização posterior em modo offline.
+4. **Restrição de anexos:** O formulário aceita dados textuais e campos estruturados, sem suporte para upload direto de arquivos de vídeo.
+5. **Permissões no banco de dados:** O isolamento das informações entre moradores e condomínios depende das regras ativas em `firestore.rules`.
 
 ---
 
 ## 5. Como a IA foi usada no processo?
 
-O uso de Inteligência Artificial ocorreu em duas frentes fundamentais:
+### 5.1 No Produto (Execução)
+- **Classificação semântica de ocorrências:** Modelos Llama 3 (via Groq) analisam o texto para identificar a área do problema (Manutenção, Barulho, Segurança, Limpeza, Convivência) e estimar o nível de urgência operacional.
+- **Refinamento de comunicados com dois provedores:** O sistema envia o rascunho da síndica para o Google Gemini ou para o Groq. Se o provedor principal falhar ou atingir limite de uso, o secundário é acionado automaticamente.
+- **Sanitização de texto:** As entradas dos usuários passam por filtros de limpeza para remover caracteres de controle e mitigar tentativas de injeção de prompt antes do envio às APIs.
 
-### 5.1 No Produto (Runtime / Aplicação)
-- **Motor de Classificação Semântica com Groq:** Utilização da infraestrutura de inferência ultra-rápida do **Groq** (com modelos LLM como Llama 3 / Mixtral) para Processamento de Linguagem Natural (PLN). A IA analisa a descrição da ocorrência enviada pelo morador, extrai as entidades contextuais de gravidade e classifica instantaneamente a urgência para guiar a atuação da equipe predial.
-
-### 5.2 No Processo de Desenvolvimento (Engenharia e Governança)
-- **Desenvolvimento Guiado por Especificação (Spec-Driven Development):** Arquitetura construída com base em documento de regras de negócio (`docs/REGRAS_DE_NEGOCIO.md`) e especificação de governança técnica.
-- **Rastreabilidade e Memória Técnica:** Uso de agentes de IA para manutenção da memória técnica desacoplada (`docs/CHANGELOG_TECH.md`), automação de scripts de auditoria estática (`audit-esteira.mjs`) e geração de testes unitários anti-regressão.
-- **Padronização e Qualidade de Código:** Refatoração, estruturação de componentes desacoplados com React + TypeScript e aplicação de políticas de escrita técnica objetiva (sem termos vagos ou clichês gerados por IA).
+### 5.2 No Processo de Desenvolvimento
+- **Desenvolvimento guiado por especificação:** O código foi implementado com base nos requisitos descritos em `docs/REGRAS_DE_NEGOCIO.md`.
+- **Rastreabilidade técnica:** As modificações no código são registradas no arquivo `docs/CHANGELOG_TECH.md` de forma independente das notas de versão publicadas no `CHANGELOG.md`.
+- **Prevenção de regressões:** 141 testes unitários validam cálculos, ordenação de blocos, restrições de formulário e contingências de erro.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 6. Tecnologias Utilizadas
 
-- **Frontend:** [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
-- **Estilização e Componentes:** [Tailwind CSS v3](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/), [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
-- **Backend & Database:** [Firebase](https://firebase.google.com/) (Authentication & Cloud Firestore)
-- **Inteligência Artificial:** [Groq API](https://groq.com/) (LPU Inference Engine / Llama 3)
-- **Testes & Qualidade:** [Vitest](https://vitest.dev/), [Testing Library](https://testing-library.com/), [Husky](https://typicode.github.io/husky/), [Commitlint](https://commitlint.js.org/), [Oxlint](https://oxc.rs/)
+- **Frontend:** [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite 8](https://vitejs.dev/), [React Router](https://reactrouter.com/)
+- **Estilização e Componentes:** [Tailwind CSS v3](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/), [QRCode.react](https://github.com/zpao/qrcode.react)
+- **Backend e Autenticação:** [Firebase Authentication](https://firebase.google.com/), [Cloud Firestore](https://firebase.google.com/products/firestore)
+- **Provedores de IA:** [Groq Cloud](https://groq.com/) (Llama 3), [Google Gemini API](https://ai.google.dev/)
+- **Testes e Qualidade:** [Vitest](https://vitest.dev/), [Testing Library](https://testing-library.com/), [ESLint 9](https://eslint.org/), [Oxlint](https://oxc.rs/), [Husky](https://typicode.github.io/husky/), [Commitlint](https://commitlint.js.org/)
