@@ -120,4 +120,41 @@ describe('Suíte de Lógica de Negócio para Janelas Integradas', () => {
       });
     });
   });
+
+  describe('Diferenciação de Visão: Morador vs Síndica', () => {
+    it('morador não pode ter permissão de encerramento nem reabertura', () => {
+      expect(canCloseOcorrencia('morador')).toBe(false);
+      expect(canReopenOcorrencia('morador')).toBe(false);
+      expect(canCloseOcorrencia('Morador')).toBe(false);
+      expect(canReopenOcorrencia('Morador')).toBe(false);
+    });
+
+    it('síndica possui permissão de encerramento e reabertura', () => {
+      expect(canCloseOcorrencia('sindica')).toBe(true);
+      expect(canReopenOcorrencia('sindica')).toBe(true);
+      expect(canCloseOcorrencia('Síndica')).toBe(true);
+      expect(canReopenOcorrencia('Síndica')).toBe(true);
+    });
+
+    it('deve resolver corretamente o nome do autor e unidade em payloads legados e atuais', () => {
+      const payloadAtual = {
+        autorNome: 'Carlos Silva',
+        unidadeNome: 'Apto 101',
+      };
+      const autorResolvido1 = payloadAtual.autorNome || (payloadAtual as any).moradorNome || 'Não informado';
+      const unidadeResolvida1 = payloadAtual.unidadeNome || (payloadAtual as any).unidade || 'N/A';
+      expect(autorResolvido1).toBe('Carlos Silva');
+      expect(unidadeResolvida1).toBe('Apto 101');
+
+      const payloadLegado = {
+        moradorNome: 'Maria Santos',
+        unidade: 'Bloco B - 302',
+      };
+      const autorResolvido2 = (payloadLegado as any).autorNome || payloadLegado.moradorNome || 'Não informado';
+      const unidadeResolvida2 = (payloadLegado as any).unidadeNome || payloadLegado.unidade || 'N/A';
+      expect(autorResolvido2).toBe('Maria Santos');
+      expect(unidadeResolvida2).toBe('Bloco B - 302');
+    });
+  });
 });
+

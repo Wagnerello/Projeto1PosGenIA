@@ -1,4 +1,5 @@
-/* eslint-disable import-x/no-restricted-paths, complexity */ // FIXME: D�vida t�cnica (Quarentena)
+/* eslint-disable import-x/no-restricted-paths, complexity */ // FIXME: Dúvida técnica (Quarentena)
+import { lazy, Suspense } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, LogOut, Loader2 } from 'lucide-react';
@@ -6,9 +7,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { isSuperAdminEmail } from '@/lib/auth-helpers';
-import SuperAdminView from '@/views/dashboards/SuperAdminView';
-import SindicaView from '@/views/dashboards/SindicaView';
-import MoradorView from '@/views/dashboards/MoradorView';
+
+const SuperAdminView = lazy(() => import('@/views/dashboards/SuperAdminView'));
+const SindicaView = lazy(() => import('@/views/dashboards/SindicaView'));
+const MoradorView = lazy(() => import('@/views/dashboards/MoradorView'));
+
+const ViewLoader = () => (
+  <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600 gap-3">
+    <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+    <p className="text-sm font-medium">Carregando painel...</p>
+  </div>
+);
 
 export default function DashboardView() {
   const { appUser, currentUser, loading } = useAuth();
@@ -35,12 +44,20 @@ export default function DashboardView() {
 
   // 2. Visão 1: SUPER ADMIN (SaaS Global)
   if (isSuperAdmin) {
-    return <SuperAdminView />;
+    return (
+      <Suspense fallback={<ViewLoader />}>
+        <SuperAdminView />
+      </Suspense>
+    );
   }
 
   // 3. Visão 2: SÍNDICA (Gestão do Condomínio)
   if (appUser?.role === 'sindica') {
-    return <SindicaView />;
+    return (
+      <Suspense fallback={<ViewLoader />}>
+        <SindicaView />
+      </Suspense>
+    );
   }
 
   // 4. Usuário com cadastro aguardando aprovação
@@ -88,7 +105,9 @@ export default function DashboardView() {
   }
 
   // 6. Visão 3: MORADOR (Área do Morador Ativo)
-  return <MoradorView />;
+  return (
+    <Suspense fallback={<ViewLoader />}>
+      <MoradorView />
+    </Suspense>
+  );
 }
-
-

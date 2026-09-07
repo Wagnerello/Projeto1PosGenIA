@@ -274,18 +274,15 @@ export function refinarComunicadoHeuristico(params: RefinarComunicadoParams, avi
  * Modelos prioritários ativos da Groq para inferência textual.
  */
 const MODELOS_GROQ_PRIORITARIOS = [
-  'openai/gpt-oss-20b',
-  'qwen/qwen3.8-27b'
+  'llama-3.3-70b-versatile',
 ];
 
 /**
  * Modelos suportados da API Gemini ordenados por disponibilidade comprovada e menor latência.
  */
 const MODELOS_GEMINI_FALLBACK = [
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
-  'gemini-3-flash-preview',
-  'gemini-3.7-flash',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
 ];
 
 /**
@@ -321,7 +318,7 @@ Regras Mandatórias:
 
   for (const modelo of MODELOS_GEMINI_FALLBACK) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${geminiKey}`;
@@ -386,6 +383,9 @@ async function tentarRefinamentoGroq(
   const configTom = TOMS_CONFIG[tom];
 
   for (const modelo of MODELOS_GROQ_PRIORITARIOS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
     try {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -393,6 +393,7 @@ async function tentarRefinamentoGroq(
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
+        signal: controller.signal,
         body: JSON.stringify({
           model: modelo,
           messages: [
@@ -404,6 +405,7 @@ async function tentarRefinamentoGroq(
           max_tokens: 700,
         }),
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         if (response.status === 403) {
@@ -429,6 +431,7 @@ async function tentarRefinamentoGroq(
         };
       }
     } catch {
+      clearTimeout(timeoutId);
       break;
     }
   }
@@ -475,35 +478,50 @@ Regras Mandatórias:
 
   let teveBloqueioGroq = false;
 
-  // Se o usuário configurou chave do Gemini, priorizamos o Gemini (evita erros 403 no console do navegador)
-  if (temGemini) {
-    try {
+  const executarInferenciasIA = async (): Promise<SugestaoComunicado | null> => {
+    // Se o usuário configurou chave do Gemini, priorizamos o Gemini
+    if (temGemini) {
+      try {
+        const sugestaoGemini = await refinarComunicadoComGemini(params);
+        if (sugestaoGemini) {
+          return sugestaoGemini;
+        }
+      } catch (err) {
+        console.warn('Falha na inferência Gemini, tentando provedor alternativo:', err);
+      }
+    }
+
+    // Se o Gemini falhou ou não estava configurado, tenta a Groq
+    if (temGroq) {
+      const { sugestao, bloqueioProjeto } = await tentarRefinamentoGroq(apiKeyGroq, params, systemPrompt, userContent);
+      if (sugestao) {
+        return sugestao;
+      }
+      if (bloqueioProjeto) {
+        teveBloqueioGroq = true;
+      }
+    }
+
+    // Se a Groq foi tentada primeiro e falhou, e ainda não havíamos tentado o Gemini, tenta agora
+    if (!temGemini && temGroq) {
       const sugestaoGemini = await refinarComunicadoComGemini(params);
       if (sugestaoGemini) {
         return sugestaoGemini;
       }
-    } catch (err) {
-      console.warn('Falha na inferência Gemini, tentando provedor alternativo:', err);
     }
-  }
 
-  // Se o Gemini falhou ou não estava configurado, tenta a Groq
-  if (temGroq) {
-    const { sugestao, bloqueioProjeto } = await tentarRefinamentoGroq(apiKeyGroq, params, systemPrompt, userContent);
-    if (sugestao) {
-      return sugestao;
-    }
-    if (bloqueioProjeto) {
-      teveBloqueioGroq = true;
-    }
-  }
+    return null;
+  };
 
-  // Se a Groq foi tentada primeiro e falhou, e ainda não havíamos tentado o Gemini, tenta agora
-  if (!temGemini && temGroq) {
-    const sugestaoGemini = await refinarComunicadoComGemini(params);
-    if (sugestaoGemini) {
-      return sugestaoGemini;
-    }
+  const timeoutPromise = new Promise<null>((resolve) => {
+    setTimeout(() => resolve(null), 3500);
+  });
+
+  try {
+    const res = await Promise.race([executarInferenciasIA(), timeoutPromise]);
+    if (res) return res;
+  } catch {
+    // Silencia qualquer falha e recorre ao motor heurístico local
   }
 
   // Fallback Heurístico Local (0ms, sempre disponível)

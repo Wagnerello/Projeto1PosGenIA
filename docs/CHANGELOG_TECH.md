@@ -3,6 +3,10 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+- [feat] feat(ui): implementar loading explicativo da IA com stepper de 4 etapas e shimmer no aprimoramento de comunicados (commit: pending) — Refs: nenhuma
+- [perf] perf(ia): otimizar esteira de modelos com timeout global de 3.5s e fallback instantaneo sem travamento de tela (commit: pending) — Refs: nenhuma
+- [refactor] refactor(ocorrencia): segregar painel do morador e sindica com navegacao mobile e modelo de pagina (commit: pending) — Refs: nenhuma
+- [docs] docs(readme): atualizar especificacao de livro digital e diretrizes no-ai-slop (commit: 0ea7805) — Refs: nenhuma
 - [docs] atualizar README com foco em livro digital de ocorrencias, arquitetura multi-provedor de IA e remocao de slop (commit: pending) — Refs: nenhuma
 - [feat] feat: reforco de seguranca (regras e sanitizador) e correcoes de bugs (commit: 3461e18) — Refs: nenhuma
 

@@ -1,5 +1,5 @@
 /* eslint-disable quality/max-lines, @typescript-eslint/no-explicit-any, max-statements */ // FIXME: D�vida t�cnica (Quarentena)
-import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, addDoc, updateDoc, setDoc, deleteDoc, arrayUnion } from "firebase/firestore";
 import { db } from "./firebase";
 import { getTimestampMillis } from "./date-utils";
 import { updateUnitNameWithNewBlock, sortUnits } from "./unit-helpers";
@@ -437,9 +437,6 @@ export const despacharOcorrencia = async (
   }
 ) => {
   const ref = doc(db, "ocorrencias", ocorrenciaId);
-  const snap = await getDoc(ref);
-  const atual = snap.exists() ? snap.data() : {};
-  const historicoAntigo = Array.isArray(atual.historico) ? atual.historico : [];
 
   const novoItem = {
     id: `hist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -455,7 +452,7 @@ export const despacharOcorrencia = async (
   await updateDoc(ref, {
     status: params.statusNovo,
     responsavelAtual: params.responsavelNovo,
-    historico: [...historicoAntigo, novoItem],
+    historico: arrayUnion(novoItem),
     updatedAt: new Date(),
   });
 

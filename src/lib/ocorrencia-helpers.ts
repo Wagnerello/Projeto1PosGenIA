@@ -47,7 +47,11 @@ export interface OcorrenciaData {
  */
 export function canCloseOcorrencia(userRole: string | undefined | null): boolean {
   if (!userRole) return false;
-  const role = userRole.toLowerCase().trim();
+  const role = userRole
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
   return role === 'sindica' || role === 'superadmin';
 }
 
@@ -56,7 +60,11 @@ export function canCloseOcorrencia(userRole: string | undefined | null): boolean
  */
 export function canReopenOcorrencia(userRole: string | undefined | null): boolean {
   if (!userRole) return false;
-  const role = userRole.toLowerCase().trim();
+  const role = userRole
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
   return role === 'sindica' || role === 'superadmin';
 }
 
@@ -115,6 +123,7 @@ export function getStatusConfig(status: string | undefined): {
         borderClass: 'border-purple-200',
       };
     case 'Em Atendimento':
+    case 'Em Andamento':
     case 'Em Análise':
       return {
         label: 'Em Atendimento',

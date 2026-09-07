@@ -388,8 +388,49 @@ export default function SindicaView() {
     tipo?: 'despacho' | 'conclusao_equipe' | 'encerramento' | 'reabertura';
   }) => {
     if (!selectedOcorrencia?.id) return;
+    const ocorrenciaId = selectedOcorrencia.id;
+
+    // Item de histórico para atualização otimista imediata
+    const novoHistoricoItem = {
+      id: String(Date.now()),
+      dataHora: new Date().toISOString(),
+      autorNome: appUser?.nome || 'Síndica',
+      autorPapel: 'Síndica',
+      statusAnterior: selectedOcorrencia.status || 'Pendente',
+      statusNovo: params.statusNovo,
+      responsavelAnterior: selectedOcorrencia.responsavelAtual || 'Síndica',
+      responsavelNovo: params.responsavelNovo,
+      relato: params.relato,
+      tipo: params.tipo || 'despacho',
+    };
+
+    // 1. OTIMISTA: Atualiza estado da lista imediatamente sem delay perceptível
+    setOcorrencias((prev) =>
+      prev.map((oc) => {
+        if (oc.id !== ocorrenciaId) return oc;
+        const hist = Array.isArray(oc.historico) ? oc.historico : [];
+        return {
+          ...oc,
+          status: params.statusNovo,
+          responsavelAtual: params.responsavelNovo,
+          historico: [...hist, novoHistoricoItem],
+          updatedAt: new Date(),
+        };
+      })
+    );
+
+    // 2. Fecha a visualização detalhada imediatamente
+    setSelectedOcorrencia(null);
+    showToast(
+      params.statusNovo === 'Resolvido'
+        ? 'Chamado homologado e encerrado com sucesso!'
+        : 'Despacho registrado com sucesso!',
+      'success'
+    );
+
+    // 3. Persiste no Firestore em segundo plano
     try {
-      await despacharOcorrencia(selectedOcorrencia.id, {
+      await despacharOcorrencia(ocorrenciaId, {
         relato: params.relato,
         responsavelNovo: params.responsavelNovo,
         statusNovo: params.statusNovo,
@@ -397,10 +438,19 @@ export default function SindicaView() {
         autorPapel: 'Síndica',
         tipo: params.tipo,
       });
-      await loadAllData();
-      setSelectedOcorrencia(null);
+
+      // 4. Sincroniza em background apenas a coleção de ocorrências sem disparar spinner na tela inteira
+      if (appUser?.condominioId) {
+        const ocorrenciasAtualizadas = await getOcorrencias(appUser.condominioId, 'sindica');
+        setOcorrencias(ocorrenciasAtualizadas);
+      }
     } catch (err) {
       console.error('Erro ao despachar ocorrência:', err);
+      showToast('Falha ao sincronizar alteração com o servidor. Revertendo...', 'error');
+      if (appUser?.condominioId) {
+        const rollbackOcorrencias = await getOcorrencias(appUser.condominioId, 'sindica');
+        setOcorrencias(rollbackOcorrencias);
+      }
       throw err;
     }
   };

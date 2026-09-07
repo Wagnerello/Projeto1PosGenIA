@@ -1,4 +1,4 @@
-/* eslint-disable complexity, quality/no-direct-console */ // FIXME: D�vida t�cnica (Quarentena)
+/* eslint-disable complexity, max-statements */
 export type TriagemResultado = {
   categoria: 'Manutenção' | 'Barulho' | 'Segurança' | 'Limpeza' | 'Convivência' | 'Outro';
   urgencia: 'Baixa' | 'Média' | 'Alta';
@@ -116,31 +116,19 @@ export function triagemHeuristica(titulo: string = '', descricao: string = ''): 
  */
 import { sanitizePromptInput } from './input-sanitizer';
 
-export async function classificarOcorrenciaComIA(
-  titulo: string,
-  descricao: string
-): Promise<TriagemResultado> {
-  const cleanTitulo = sanitizePromptInput(titulo || '', 100).cleanText;
-  const cleanDescricao = sanitizePromptInput(descricao || '', 500).cleanText;
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+const CATEGORIAS_VALIDAS = ['Manutenção', 'Barulho', 'Segurança', 'Limpeza', 'Convivência', 'Outro'] as const;
+const URGENCIAS_VALIDAS = ['Baixa', 'Média', 'Alta'] as const;
 
-  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '' || apiKey.startsWith('gsk_sua_chave')) {
-    return triagemHeuristica(cleanTitulo, cleanDescricao);
-  }
+const MODELOS_GEMINI_TRIAGEM = [
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+];
 
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey.trim()}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: `Você é o motor de triagem inteligente de um condomínio residencial.
+const MODELOS_GROQ_TRIAGEM = [
+  'llama-3.3-70b-versatile',
+];
+
+const SYSTEM_INSTRUCTION_TRIAGEM = `Você é o motor de triagem inteligente de um condomínio residencial.
 Analise o chamado do morador e retorne EXCLUSIVAMENTE um objeto JSON no formato:
 {
   "categoria": "Manutenção" | "Barulho" | "Segurança" | "Limpeza" | "Convivência" | "Outro",
@@ -150,51 +138,203 @@ Analise o chamado do morador e retorne EXCLUSIVAMENTE um objeto JSON no formato:
 Regras de Urgência:
 - "Alta": risco de vida, segurança, incêndio, choque elétrico, vazamento ativo de água, vazamento de gás, elevador travado com pessoa.
 - "Média": barulho excessivo, elevador quebrado sem passageiro, infiltração pontual, lâmpada de área comum, portão falhando.
-- "Baixa": dúvidas, sugestões, itens estéticos, reparos não urgentes.`,
-          },
-          {
-            role: 'user',
-            content: `Título: ${cleanTitulo}\nDescrição: ${cleanDescricao}`,
-          },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
-        max_tokens: 150,
-      }),
-    });
+- "Baixa": dúvidas, sugestões, itens estéticos, reparos não urgentes.`;
 
-    if (!response.ok) {
-      console.warn('Groq API retornou status não-OK:', response.status);
-      return triagemHeuristica(titulo, descricao);
-    }
+function normalizarTriagemJSON(raw: unknown): TriagemResultado | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as Record<string, unknown>;
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) {
-      return triagemHeuristica(titulo, descricao);
-    }
+  const categoria = CATEGORIAS_VALIDAS.includes(obj.categoria as (typeof CATEGORIAS_VALIDAS)[number])
+    ? (obj.categoria as TriagemResultado['categoria'])
+    : 'Outro';
 
-    const parsed = JSON.parse(content);
+  const urgencia = URGENCIAS_VALIDAS.includes(obj.urgencia as (typeof URGENCIAS_VALIDAS)[number])
+    ? (obj.urgencia as TriagemResultado['urgencia'])
+    : 'Média';
 
-    const categoriasValidas = ['Manutenção', 'Barulho', 'Segurança', 'Limpeza', 'Convivência', 'Outro'];
-    const urgenciasValidas = ['Baixa', 'Média', 'Alta'];
+  const justificativa = typeof obj.justificativa === 'string' && obj.justificativa.trim().length > 0
+    ? obj.justificativa.trim()
+    : 'Classificado pelo motor de IA.';
 
-    const categoriaFinal = categoriasValidas.includes(parsed.categoria)
-      ? (parsed.categoria as TriagemResultado['categoria'])
-      : 'Outro';
-
-    const urgenciaFinal = urgenciasValidas.includes(parsed.urgencia)
-      ? (parsed.urgencia as TriagemResultado['urgencia'])
-      : 'Média';
-
-    return {
-      categoria: categoriaFinal,
-      urgencia: urgenciaFinal,
-      justificativa: parsed.justificativa || 'Classificado pelo motor de IA.',
-      triagemPorIA: true,
-    };
-  } catch (error) {
-    console.error('Falha na triagem com Groq, aplicando fallback determinístico:', error);
-    return triagemHeuristica(titulo, descricao);
-  }
+  return {
+    categoria,
+    urgencia,
+    justificativa,
+    triagemPorIA: true,
+  };
 }
+
+/**
+ * Tenta classificar a ocorrência utilizando a API do Google Gemini.
+ */
+export async function classificarComGemini(
+  cleanTitulo: string,
+  cleanDescricao: string,
+  apiKey: string
+): Promise<TriagemResultado | null> {
+  const prompt = `${SYSTEM_INSTRUCTION_TRIAGEM}\n\nChamado do morador:\nTítulo: ${cleanTitulo}\nDescrição: ${cleanDescricao}`;
+
+  for (const modelo of MODELOS_GEMINI_TRIAGEM) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 200,
+            responseMimeType: 'application/json',
+          },
+        }),
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) continue;
+
+      const parsed = JSON.parse(rawText);
+      const resultado = normalizarTriagemJSON(parsed);
+      if (resultado) return resultado;
+    } catch {
+      clearTimeout(timeoutId);
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Tenta classificar a ocorrência utilizando a API do Groq.
+ */
+export async function classificarComGroq(
+  cleanTitulo: string,
+  cleanDescricao: string,
+  apiKey: string
+): Promise<TriagemResultado | null> {
+  for (const modelo of MODELOS_GROQ_TRIAGEM) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: modelo,
+          messages: [
+            { role: 'system', content: SYSTEM_INSTRUCTION_TRIAGEM },
+            { role: 'user', content: `Título: ${cleanTitulo}\nDescrição: ${cleanDescricao}` },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.1,
+          max_tokens: 150,
+        }),
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) continue;
+
+      const parsed = JSON.parse(content);
+      const resultado = normalizarTriagemJSON(parsed);
+      if (resultado) return resultado;
+    } catch {
+      clearTimeout(timeoutId);
+      continue;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Envia o chamado para inferência de IA com esteira de resiliência ultra-rápida:
+ * 1. Prioriza o provedor preferencial com timeout estrito;
+ * 2. Faz fallback transparente para o provedor secundário;
+ * 3. Trava máxima de 2.5 segundos: se a rede oscilar, recai instantaneamente no motor determinístico local (0ms).
+ */
+export async function classificarOcorrenciaComIA(
+  titulo: string,
+  descricao: string,
+  provedorPreferencial?: 'gemini' | 'groq'
+): Promise<TriagemResultado> {
+  const cleanTitulo = sanitizePromptInput(titulo || '', 100).cleanText;
+  const cleanDescricao = sanitizePromptInput(descricao || '', 500).cleanText;
+
+  const rawGroqKey = import.meta.env.VITE_GROQ_API_KEY as string | undefined;
+  const rawGeminiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+
+  const apiKeyGroq = rawGroqKey && typeof rawGroqKey === 'string' && !rawGroqKey.startsWith('gsk_sua_chave')
+    ? rawGroqKey.trim()
+    : '';
+
+  const apiKeyGemini = rawGeminiKey && typeof rawGeminiKey === 'string' && !rawGeminiKey.startsWith('AIza_sua_chave')
+    ? rawGeminiKey.trim()
+    : '';
+
+  const temGemini = apiKeyGemini.length > 0;
+  const temGroq = apiKeyGroq.length > 0;
+
+  const tentarGemini = async () => (temGemini ? classificarComGemini(cleanTitulo, cleanDescricao, apiKeyGemini) : null);
+  const tentarGroq = async () => (temGroq ? classificarComGroq(cleanTitulo, cleanDescricao, apiKeyGroq) : null);
+
+  const primario = provedorPreferencial === 'groq'
+    ? (temGroq ? tentarGroq : tentarGemini)
+    : (temGemini ? tentarGemini : tentarGroq);
+
+  const secundario = primario === tentarGemini ? tentarGroq : tentarGemini;
+
+  const inferenciaIA = async (): Promise<TriagemResultado | null> => {
+    try {
+      const resPrimario = await primario();
+      if (resPrimario) return resPrimario;
+    } catch {
+      // Segue para fallback secundário
+    }
+
+    try {
+      const resSecundario = await secundario();
+      if (resSecundario) return resSecundario;
+    } catch {
+      // Segue para fallback determinístico
+    }
+
+    return null;
+  };
+
+  // Trava rígida: nunca deixa a criação do chamado travar por mais de 2.5s se a rede falhar
+  const timeoutPromise = new Promise<null>((resolve) => {
+    setTimeout(() => resolve(null), 2500);
+  });
+
+  try {
+    const res = await Promise.race([inferenciaIA(), timeoutPromise]);
+    if (res) return res;
+  } catch {
+    // Silencia qualquer exceção e recorre à heurística local
+  }
+
+  return triagemHeuristica(titulo, descricao);
+}
+

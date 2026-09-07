@@ -26,7 +26,7 @@ import { classificarOcorrenciaComIA } from '@/lib/ai-triagem';
 import { getStatusConfig, getResponsavelConfig } from '@/lib/ocorrencia-helpers';
 import { getCategoriaAvisoConfig } from '@/lib/aviso-helpers';
 import { NovaOcorrenciaJanela } from '@/components/dashboard/NovaOcorrenciaJanela';
-import { OcorrenciaTimelineJanela } from '@/components/common/OcorrenciaTimelineJanela';
+import { MoradorOcorrenciaDetalhe } from '@/components/morador/MoradorOcorrenciaDetalhe';
 import { formatarDataHora } from '@/lib/date-utils';
 
 export default function MoradorView() {
@@ -87,6 +87,11 @@ export default function MoradorView() {
 
       if (c) setCondoNome((c as any).nome || 'Meu Condomínio');
       setOcorrencias(oc);
+      setSelectedOcorrencia((prev: any) => {
+        if (!prev?.id) return null;
+        const atual = oc.find((item: any) => item.id === prev.id);
+        return atual || prev;
+      });
       setAvisos(avList);
     } catch (e) {
       console.error('Erro ao carregar dados do morador:', e);
@@ -103,8 +108,47 @@ export default function MoradorView() {
     setErrorForm('');
     setSubmitting(true);
     try {
+      // 1. Triagem rápida com IA (timeout estrito de 2.5s com fallback automático em 0ms)
       const triagem = await classificarOcorrenciaComIA(data.titulo, data.descricao);
-      await createOcorrencia({
+
+      const tempId = `temp_${Date.now()}`;
+      const novaOcorrenciaOtimista = {
+        id: tempId,
+        titulo: data.titulo,
+        descricao: data.descricao,
+        categoria: triagem.categoria,
+        urgencia: triagem.urgencia,
+        iaJustificativa: triagem.justificativa,
+        triagemPorIA: triagem.triagemPorIA,
+        condominioId: appUser?.condominioId,
+        unidadeId: appUser?.unidadeId || '',
+        unidadeNome: appUser?.unidadeNome || 'Minha Unidade',
+        autorNome: appUser?.nome || 'Morador',
+        autorEmail: appUser?.email || '',
+        status: 'Pendente',
+        responsavelAtual: 'Síndica',
+        historico: [
+          {
+            id: `hist_${Date.now()}_init`,
+            data: new Date().toISOString(),
+            autorNome: appUser?.nome || 'Morador',
+            autorPapel: 'Morador',
+            mensagem: 'Chamado aberto pelo morador.',
+            statusNovo: 'Pendente',
+            responsavelNovo: 'Síndica',
+            tipo: 'abertura',
+          },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // 2. Atualização otimista: insere na lista e fecha a janela do chamado na hora (0ms)
+      setOcorrencias((prev) => [novaOcorrenciaOtimista, ...prev]);
+      setModalOpen(false);
+
+      // 3. Grava no Firestore em segundo plano
+      const idReal = await createOcorrencia({
         titulo: data.titulo,
         descricao: data.descricao,
         categoria: triagem.categoria,
@@ -118,11 +162,18 @@ export default function MoradorView() {
         autorEmail: appUser?.email || '',
         status: 'Pendente',
       });
-      setModalOpen(false);
-      await loadData();
+
+      // 4. Substitui o id temporário pelo id oficial do banco
+      setOcorrencias((prev) =>
+        prev.map((item) => (item.id === tempId ? { ...item, id: idReal } : item))
+      );
     } catch (err) {
       console.error(err);
       setErrorForm('Erro ao registrar ocorrência. Tente novamente.');
+      if (appUser?.condominioId) {
+        const rollback = await getOcorrencias(appUser.condominioId, 'morador', appUser.unidadeId);
+        setOcorrencias(rollback);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -219,11 +270,10 @@ export default function MoradorView() {
                 }}
               />
             ) : selectedOcorrencia ? (
-              <OcorrenciaTimelineJanela
+              <MoradorOcorrenciaDetalhe
                 ocorrencia={selectedOcorrencia}
-                userRole="morador"
-                userName={appUser?.nome || 'Morador'}
                 onVoltar={() => setSelectedOcorrencia(null)}
+                onAtualizar={loadData}
               />
             ) : (
               <Card className="border-0 shadow-sm overflow-hidden">

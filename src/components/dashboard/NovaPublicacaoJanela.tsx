@@ -1,5 +1,5 @@
 /* eslint-disable quality/max-lines, import-x/no-restricted-paths, max-lines-per-function, complexity, quality/no-direct-console, max-statements */ // FIXME: D�vida t�cnica (Quarentena)
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,9 @@ import {
   Eye,
   Send,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Wand2,
+  Loader2,
 } from 'lucide-react';
 import {
   refinarComunicadoComIA,
@@ -53,6 +55,25 @@ const TONS_ICONES: Record<TomComunicado, { icon: string; corBorda: string }> = {
   acolhedor: { icon: '💚', corBorda: 'border-pink-300' },
 };
 
+const ETAPAS_REFINAMENTO_IA = [
+  {
+    titulo: 'Análise estrutural e contexto',
+    descricao: 'Identificando tópicos centrais e objetivo da publicação',
+  },
+  {
+    titulo: 'Calibragem de tom condominial',
+    descricao: 'Ajustando estilo e vocabulário ao tom selecionado',
+  },
+  {
+    titulo: 'Revisão gramatical e clareza',
+    descricao: 'Lapidando concordância, pontuação e eliminação de ambiguidades',
+  },
+  {
+    titulo: 'Estruturação do título e encerramento',
+    descricao: 'Finalizando parágrafos para leitura ágil no app e mural',
+  },
+];
+
 export function NovaPublicacaoJanela({
   onVoltar,
   onSave,
@@ -78,9 +99,11 @@ export function NovaPublicacaoJanela({
 
   // Estado da IA
   const [gerandoSugestao, setGerandoSugestao] = useState(false);
+  const [etapaIA, setEtapaIA] = useState<number>(0);
   const [sugestao, setSugestao] = useState<SugestaoComunicado | null>(null);
   const [sugestaoFeedback, setSugestaoFeedback] = useState('');
   const [rascunhoOriginalSalvo, setRascunhoOriginalSalvo] = useState<{ titulo: string; mensagem: string } | null>(null);
+  const painelDireitoRef = useRef<HTMLDivElement>(null);
 
   // Estado de envio
   const [formError, setFormError] = useState('');
@@ -94,6 +117,20 @@ export function NovaPublicacaoJanela({
     setFormError('');
     setSugestaoFeedback('');
     setGerandoSugestao(true);
+    setEtapaIA(0);
+
+    // Auto-scroll para o painel em telas menores para a usuária ver o progresso
+    if (window.innerWidth < 1024 && painelDireitoRef.current) {
+      setTimeout(() => {
+        painelDireitoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    }
+
+    // Timer de progressão suave das etapas de refinamento
+    const stepInterval = setInterval(() => {
+      setEtapaIA((prev) => (prev < 3 ? prev + 1 : prev));
+    }, 650);
+
     try {
       // Salva o rascunho original para permitir desfazer se a síndica quiser
       if (!rascunhoOriginalSalvo) {
@@ -106,11 +143,15 @@ export function NovaPublicacaoJanela({
         mensagem,
         tom,
       });
+      clearInterval(stepInterval);
+      setEtapaIA(3);
       setSugestao(res);
     } catch (err) {
+      clearInterval(stepInterval);
       console.error('Erro ao refinar comunicado:', err);
       setFormError('Não foi possível gerar a sugestão da IA neste momento. Tente novamente.');
     } finally {
+      clearInterval(stepInterval);
       setGerandoSugestao(false);
     }
   };
@@ -464,9 +505,135 @@ export function NovaPublicacaoJanela({
         </div>
 
         {/* Coluna 2 (5 colunas): Painel de Prévia em Tempo Real & Comparativo da IA */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Se a IA gerou uma sugestão, exibe o Card de Aprovação em Destaque */}
-          {sugestao ? (
+        <div ref={painelDireitoRef} className="lg:col-span-5 space-y-4">
+          {/* Tela de Loading Explicativo da IA */}
+          {gerandoSugestao ? (
+            <div className="bg-gradient-to-b from-indigo-50/80 via-white to-indigo-50/30 rounded-xl border-2 border-indigo-300/80 p-5 space-y-5 shadow-sm animate-in fade-in-50 duration-200">
+              {/* Cabeçalho do Loading */}
+              <div className="space-y-3 border-b border-indigo-100 pb-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-indigo-600 text-white text-[11px] font-semibold px-2.5 py-0.5 flex items-center gap-1.5 shadow-xs">
+                      <Sparkles className="h-3 w-3 animate-spin" />
+                      <span>Processando Redação com IA</span>
+                    </Badge>
+                    <span className="text-xs font-medium text-indigo-950 hidden sm:inline">
+                      Tom: {TOMS_CONFIG[tom].label}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-indigo-700">
+                    {etapaIA === 0 ? '25%' : etapaIA === 1 ? '50%' : etapaIA === 2 ? '75%' : '95%'}
+                  </span>
+                </div>
+
+                {/* Barra de progresso */}
+                <div className="w-full bg-indigo-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-indigo-600 to-indigo-500 h-2 rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      width: `${etapaIA === 0 ? 25 : etapaIA === 1 ? 50 : etapaIA === 2 ? 75 : 95}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Etapas Visuais com Status em Tempo Real */}
+              <div className="space-y-2.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Etapas de Refinamento:
+                </span>
+                <div className="space-y-2">
+                  {ETAPAS_REFINAMENTO_IA.map((etapa, idx) => {
+                    const isConcluida = idx < etapaIA;
+                    const isAtiva = idx === etapaIA;
+
+                    return (
+                      <div
+                        key={etapa.titulo}
+                        className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-all duration-300 ${
+                          isAtiva
+                            ? 'bg-indigo-50/90 border-indigo-300 shadow-xs'
+                            : isConcluida
+                            ? 'bg-white/80 border-emerald-200'
+                            : 'bg-white/40 border-slate-100 opacity-60'
+                        }`}
+                      >
+                        <div className="mt-0.5 shrink-0">
+                          {isConcluida ? (
+                            <div className="h-4.5 w-4.5 rounded-full bg-emerald-600 text-white flex items-center justify-center ring-2 ring-emerald-100">
+                              <Check className="h-3 w-3 stroke-[3]" />
+                            </div>
+                          ) : isAtiva ? (
+                            <div className="h-4.5 w-4.5 rounded-full bg-indigo-600 text-white flex items-center justify-center ring-2 ring-indigo-200 animate-pulse">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            </div>
+                          ) : (
+                            <div className="h-4.5 w-4.5 rounded-full bg-slate-100 border border-slate-300 text-slate-400 text-[10px] font-bold flex items-center justify-center">
+                              {idx + 1}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p
+                              className={`text-xs ${
+                                isAtiva
+                                  ? 'text-indigo-950 font-bold'
+                                  : isConcluida
+                                  ? 'text-slate-800 font-medium'
+                                  : 'text-slate-500'
+                              }`}
+                            >
+                              {etapa.titulo}
+                            </p>
+                            {isAtiva && (
+                              <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-100/80 px-1.5 py-0.5 rounded-full">
+                                Em andamento...
+                              </span>
+                            )}
+                            {isConcluida && (
+                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+                                Concluído
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                            {etapa.descricao}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Esqueleto Animado Shimmer simulando a montagem */}
+              <div className="p-3.5 bg-white rounded-lg border border-indigo-100/80 shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
+                    <Wand2 className="h-3.5 w-3.5 animate-spin text-indigo-600" />
+                    Redigindo estrutura da publicação...
+                  </span>
+                  <span className="text-[10px] text-slate-400">Tempo estimado: ~2s</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="h-4 bg-indigo-100/70 rounded-md animate-pulse w-3/4" />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="h-3 bg-slate-100 rounded animate-pulse w-full" />
+                    <div className="h-3 bg-slate-100 rounded animate-pulse w-5/6" />
+                    <div className="h-3 bg-slate-100 rounded animate-pulse w-2/3" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Rodapé explicativo */}
+              <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+                A IA preserva a essência das informações que você digitou e adapta os termos para a melhor comunicação com os moradores.
+              </p>
+            </div>
+          ) : sugestao ? (
             <div className="bg-indigo-50/40 rounded-xl border-2 border-indigo-300 p-4 space-y-4 shadow-sm animate-in fade-in-50 duration-200">
               <div className="flex items-center justify-between border-b border-indigo-200 pb-2">
                 <div className="flex items-center gap-1.5">
