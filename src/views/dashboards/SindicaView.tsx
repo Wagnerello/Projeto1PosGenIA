@@ -1043,109 +1043,156 @@ export default function SindicaView() {
 
             {/* Tab: Visão Geral (HOME DA APLICAÇÃO) */}
             <SindicaGeralTab
-  condo={condo}
-  unitStats={unitStats}
-  moradoresStats={moradoresStats}
-  ocorrenciasStats={ocorrenciasStats}
-  avisosStats={avisosStats}
-  setActiveTab={setActiveTab}
-  showToast={showToast}
-/>
+              appUser={appUser}
+              condo={condo}
+              moradorLink={moradorLink}
+              copiedField={copiedField}
+              copyToClipboard={copyToClipboard}
+              loadAllData={loadAllData}
+              pendingUsers={pendingUsers}
+              activeUsers={activeUsers}
+              ocorrencias={ocorrencias}
+              ocorrenciasStats={ocorrenciasStats}
+              moradoresStats={moradoresStats}
+              unidades={unidades}
+              unidadesOcupadas={unidadesOcupadas}
+              chamadosAtencao={chamadosAtencao}
+              abrirOcorrenciaDireta={abrirOcorrenciaDireta}
+              avisos={avisos}
+              ultimoAviso={ultimoAviso}
+              openNovoAviso={openNovoAviso}
+              setActiveTab={setActiveTab}
+              showToast={showToast}
+            />
 
             {/* Tab: Fila de Aprovações */}
             <SindicaAprovacoesTab
-  pendingUsers={pendingUsers}
-  actionLoading={actionLoading}
-  handleApprove={handleApprove}
-  setRejectingMorador={setRejectingMorador}
-  showToast={showToast}
-/>
+              pendingUsers={pendingUsers}
+              actionLoading={actionLoading}
+              handleApprove={handleApprove}
+              setRejectingMorador={setRejectingMorador}
+              loadAllData={loadAllData}
+              showToast={showToast}
+            />
 
             {/* Tab: Gestão de Unidades */}
             <SindicaUnidadesTab
-  unidades={unidades}
-  setUnidades={setUnidades}
-  searchUnit={searchUnit}
-  setSearchUnit={setSearchUnit}
-  filterTorre={filterTorre}
-  setFilterTorre={setFilterTorre}
-  torres={torres}
-  unitStats={unitStats}
-  filteredUnitsList={filteredUnitsList}
-  openEditUnitModal={openEditUnitModal}
-  setDeletingUnit={setDeletingUnit}
-  openCreateUnitModal={openCreateUnitModal}
-  setResetModalOpen={setResetModalOpen}
-  setRenomearBlocoModalOpen={setRenomearBlocoModalOpen}
-  showToast={showToast}
-/>
+              unidades={unidades}
+              setUnidades={setUnidades}
+              searchUnit={searchUnit}
+              setSearchUnit={setSearchUnit}
+              filterTorre={filterTorre}
+              setFilterTorre={setFilterTorre}
+              torres={torres}
+              unitStats={unitStats}
+              filteredUnitsList={filteredUnitsList}
+              openEditUnitModal={openEditUnitModal}
+              setDeletingUnit={setDeletingUnit}
+              openCreateUnitModal={openCreateUnitModal}
+              setResetModalOpen={setResetModalOpen}
+              setRenomearBlocoModalOpen={setRenomearBlocoModalOpen}
+              unitModalOpen={unitModalOpen}
+              editingUnit={editingUnit}
+              savingUnit={savingUnit}
+              unitFormError={unitFormError}
+              handleSaveUnit={handleSaveUnit}
+              setUnitModalOpen={setUnitModalOpen}
+              setEditingUnit={setEditingUnit}
+              setUnitFormError={setUnitFormError}
+              resetModalOpen={resetModalOpen}
+              resettingUnits={resettingUnits}
+              handleResetEstrutura={handleResetEstrutura}
+              renomearBlocoModalOpen={renomearBlocoModalOpen}
+              availableTorres={availableTorres}
+              blocoAlvoRenomear={blocoAlvoRenomear}
+              setBlocoAlvoRenomear={setBlocoAlvoRenomear}
+              unitsCountByTorre={unitsCountByTorre}
+              isRenamingBloco={isRenamingBloco}
+              handleConfirmarRenameBloco={handleConfirmarRenameBloco}
+              getMoradoresDaUnidade={getMoradoresDaUnidade}
+              showToast={showToast}
+            />
 
         {/* Tab 2: Ocorrências do Condomínio (Redesenhado: Limpo, sem poluição visual e com despacho) */}
         <SindicaOcorrenciasTab
-  ocorrencias={ocorrencias}
-  ocorrenciaSearch={ocorrenciaSearch}
-  setOcorrenciaSearch={setOcorrenciaSearch}
-  ocorrenciaStatusFilter={ocorrenciaStatusFilter}
-  setOcorrenciaStatusFilter={setOcorrenciaStatusFilter}
-  ocorrenciaRespFilter={ocorrenciaRespFilter}
-  setOcorrenciaRespFilter={setOcorrenciaRespFilter}
-  ocorrenciasStats={ocorrenciasStats}
-  filteredOcorrenciasListList={filteredOcorrenciasListList}
-  abrirOcorrenciaDireta={abrirOcorrenciaDireta}
-  showToast={showToast}
-/>
+          appUser={appUser}
+          ocorrencias={ocorrencias}
+          ocorrenciaSearch={ocorrenciaSearch}
+          setOcorrenciaSearch={setOcorrenciaSearch}
+          ocorrenciaStatusFilter={ocorrenciaStatusFilter}
+          setOcorrenciaStatusFilter={setOcorrenciaStatusFilter}
+          ocorrenciaRespFilter={ocorrenciaRespFilter}
+          setOcorrenciaRespFilter={setOcorrenciaRespFilter}
+          ocorrenciasStats={ocorrenciasStats}
+          filteredOcorrenciasList={filteredOcorrenciasListList}
+          abrirOcorrenciaDireta={abrirOcorrenciaDireta}
+          selectedOcorrencia={selectedOcorrencia}
+          setSelectedOcorrencia={setSelectedOcorrencia}
+          handleDespacharOcorrencia={handleDespacharOcorrencia}
+          loadAllData={loadAllData}
+          showToast={showToast}
+        />
 
             {/* Tab: Mural de Avisos da Síndica */}
             <SindicaMuralTab
-  avisos={avisos}
-  searchAviso={searchAviso}
-  setSearchAviso={setSearchAviso}
-  filterAvisoCategoria={filterAvisoCategoria}
-  setFilterAvisoCategoria={setFilterAvisoCategoria}
-  filterAvisoDestinatario={filterAvisoDestinatario}
-  setFilterAvisoDestinatario={setFilterAvisoDestinatario}
-  avisosStats={avisosStats}
-  filteredAvisos={filteredAvisos}
-  openNovoAviso={openNovoAviso}
-  openEditAviso={openEditAviso}
-  setDeletingAviso={setDeletingAviso}
-  showToast={showToast}
-/>
+              avisos={avisos}
+              searchAviso={searchAviso}
+              setSearchAviso={setSearchAviso}
+              filterAvisoCategoria={filterAvisoCategoria}
+              setFilterAvisoCategoria={setFilterAvisoCategoria}
+              filterAvisoDestinatario={filterAvisoDestinatario}
+              setFilterAvisoDestinatario={setFilterAvisoDestinatario}
+              avisosStats={avisosStats}
+              filteredAvisos={filteredAvisos}
+              openNovoAviso={openNovoAviso}
+              openEditAviso={openEditAviso}
+              setDeletingAviso={setDeletingAviso}
+              showToast={showToast}
+              isCriandoAviso={isCriandoAviso}
+              setIsCriandoAviso={setIsCriandoAviso}
+              editingAviso={editingAviso}
+              setEditingAviso={setEditingAviso}
+              handleSaveAviso={handleSaveAviso}
+              availableTorres={availableTorres}
+              appUser={appUser}
+            />
 
             {/* Tab: QR Code e Convites */}
             <SindicaQrCodeTab
-  condo={condo}
-  rotatingQr={rotatingQr}
-  setRotateQrModalOpen={setRotateQrModalOpen}
-  
-  showToast={showToast}
-/>
+              condo={condo}
+              rotatingQr={rotatingQr}
+              setRotateQrModalOpen={setRotateQrModalOpen}
+              moradorLink={moradorLink}
+              copyToClipboard={copyToClipboard}
+              copiedField={copiedField}
+              showToast={showToast}
+            />
 
             {/* Tab: Gestão Completa de Moradores */}
             <SindicaMoradoresTab 
-  editingMorador={editingMorador}
-  unidades={unidades}
-  savingMorador={savingMorador}
-  setEditingMorador={setEditingMorador}
-  handleSaveMorador={handleSaveMorador}
-  moradoresStats={moradoresStats}
-  filterMoradorStatus={filterMoradorStatus}
-  setFilterMoradorStatus={setFilterMoradorStatus}
-  searchMorador={searchMorador}
-  setSearchMorador={setSearchMorador}
-  filterMoradorTorre={filterMoradorTorre}
-  setFilterMoradorTorre={setFilterMoradorTorre}
-  torres={torres}
-  filteredMoradores={filteredMoradores}
-  openEditMorador={openEditMorador}
-  
-  
-  isRejectingMorador={isRejectingMorador}
-  rejectingMorador={rejectingMorador}
-  setRejectingMorador={setRejectingMorador}
-  setRejectingMorador={setRejectingMorador}
-  showToast={showToast}
-/>
+              moradores={moradores}
+              editingMorador={editingMorador}
+              unidades={unidades}
+              savingMorador={savingMorador}
+              setEditingMorador={setEditingMorador}
+              handleSaveMorador={handleSaveMorador}
+              moradoresStats={moradoresStats}
+              filterMoradorStatus={filterMoradorStatus}
+              setFilterMoradorStatus={setFilterMoradorStatus}
+              searchMorador={searchMorador}
+              setSearchMorador={setSearchMorador}
+              filterMoradorTorre={filterMoradorTorre}
+              setFilterMoradorTorre={setFilterMoradorTorre}
+              availableTorres={availableTorres}
+              torres={torres}
+              filteredMoradores={filteredMoradores}
+              openEditMorador={openEditMorador}
+              actionLoading={actionLoading}
+              handleQuickStatusChange={handleQuickStatusChange}
+              setRejectingMorador={setRejectingMorador}
+              setDeletingMorador={setDeletingMorador}
+              showToast={showToast}
+            />
           </Tabs>
         )}
 

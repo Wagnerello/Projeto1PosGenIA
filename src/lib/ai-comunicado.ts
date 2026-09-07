@@ -1,4 +1,6 @@
-/* eslint-disable quality/max-lines, no-useless-escape, max-statements, complexity, quality/no-direct-console */ // FIXME: D�vida t�cnica (Quarentena)
+/* eslint-disable quality/max-lines, no-useless-escape, max-statements, complexity, quality/no-direct-console */ // FIXME: Dvida tcnica (Quarentena)
+import { sanitizePromptInput } from './input-sanitizer';
+
 export type TomComunicado = 'formal' | 'educativo' | 'firme' | 'direto' | 'acolhedor';
 
 export type CategoriaComunicado = 'Geral' | 'Manutenção' | 'Assembleia' | 'Segurança' | 'Convivência';
@@ -446,6 +448,9 @@ export async function refinarComunicadoComIA(params: RefinarComunicadoParams): P
   const { titulo, categoria, mensagem, tom } = params;
   const configTom = TOMS_CONFIG[tom];
 
+  const cleanTitulo = sanitizePromptInput(titulo || '', 100).cleanText;
+  const cleanMensagem = sanitizePromptInput(mensagem || '', 1500).cleanText;
+
   const temGemini = !!apiKeyGemini && !apiKeyGemini.startsWith('AIza_sua_chave');
   const temGroq = !!apiKeyGroq && !apiKeyGroq.startsWith('gsk_sua_chave');
 
@@ -466,7 +471,7 @@ Regras Mandatórias:
   "justificativaTom": "Explicação em até 20 palavras de como o tom foi calibrado para este comunicado"
 }`;
 
-  const userContent = `Título do rascunho: ${titulo || '(não informado)'}\nCategoria: ${categoria}\nRascunho original para reescrever: ${mensagem || '(não informado)'}\nTom exigido: ${configTom.label}`;
+  const userContent = `Título do rascunho: ${cleanTitulo || '(não informado)'}\nCategoria: ${categoria}\nRascunho original para reescrever: ${cleanMensagem || '(não informado)'}\nTom exigido: ${configTom.label}`;
 
   let teveBloqueioGroq = false;
 

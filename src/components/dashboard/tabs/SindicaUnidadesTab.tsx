@@ -5,16 +5,55 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QRCodeSVG } from "qrcode.react";
-import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check } from "lucide-react";
+import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check, Pencil, Trash2 } from "lucide-react";
 import { formatarDataHora } from "@/lib/date-utils";
 import { getStatusConfig, getResponsavelConfig } from "@/lib/ocorrencia-helpers";
 import { getCategoriaAvisoConfig } from "@/lib/aviso-helpers";
+import { UnidadeEditorJanela } from "@/components/dashboard/UnidadeEditorJanela";
+import { RegerarEstruturaJanela } from "@/components/dashboard/RegerarEstruturaJanela";
+import { RenomearBlocoJanela } from "@/components/dashboard/RenomearBlocoJanela";
 
 export function SindicaUnidadesTab(props: any) {
-  const { unidades, setUnidades, searchUnit, setSearchUnit, filterTorre, setFilterTorre, torres, unidadesStats, filteredUnidades, openEditUnitModal, setDeletingUnit, openCreateUnitModal, setResetModalOpen, setRenomearBlocoModalOpen, showToast } = props;
+  const {
+    unidades = [],
+    setUnidades,
+    searchUnit,
+    setSearchUnit,
+    filterTorre,
+    setFilterTorre,
+    torres,
+    unitStats = { total: 0, ocupadas: 0, vagas: 0, totalTorres: 0 },
+    filteredUnitsList = [],
+    openEditUnitModal,
+    setDeletingUnit,
+    openCreateUnitModal,
+    setResetModalOpen,
+    setRenomearBlocoModalOpen,
+    unitModalOpen,
+    editingUnit,
+    savingUnit,
+    unitFormError,
+    handleSaveUnit,
+    setUnitModalOpen,
+    setEditingUnit,
+    setUnitFormError,
+    resetModalOpen,
+    resettingUnits,
+    handleResetEstrutura,
+    renomearBlocoModalOpen,
+    availableTorres = [],
+    blocoAlvoRenomear,
+    setBlocoAlvoRenomear,
+    unitsCountByTorre = {},
+    isRenamingBloco,
+    handleConfirmarRenameBloco,
+    getMoradoresDaUnidade = () => ({ ativos: [], pendentes: [] }),
+    showToast,
+  } = props;
   return (
 <TabsContent value="unidades" className="mt-4 space-y-4">
               {unitModalOpen || editingUnit ? (

@@ -7,11 +7,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Search, Plus, MapPin, Users, Activity, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, KeyRound } from "lucide-react";
+import { Building2, Search, Plus, MapPin, Users, Activity, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, KeyRound, UserCog, Check, Copy } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Label } from "@/components/ui/label";
 
 export function SuperAdminNovoTab(props: any) {
-  const { nome, setNome, cnpj, setCnpj, sindicaNome, setSindicaNome, sindicaEmail, setSindicaEmail, sindicaSenha, setSindicaSenha, error, loading, handleCreateCondominio, setActiveTab } = props;
+  const {
+    nome,
+    setNome,
+    cnpj,
+    setCnpj,
+    sindicaNome,
+    setSindicaNome,
+    sindicaEmail,
+    setSindicaEmail,
+    sindicaSenha,
+    setSindicaSenha,
+    error,
+    loading,
+    handleCreateCondominio,
+    setActiveTab,
+    lastCreated,
+    setLastCreated,
+    copyToClipboard,
+    copiedField,
+  } = props;
   return (
 <TabsContent value="novo" className="mt-0">
             {lastCreated ? (

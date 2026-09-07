@@ -5,16 +5,35 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QRCodeSVG } from "qrcode.react";
-import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check } from "lucide-react";
+import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check, FileText } from "lucide-react";
 import { formatarDataHora } from "@/lib/date-utils";
 import { getStatusConfig, getResponsavelConfig } from "@/lib/ocorrencia-helpers";
 import { getCategoriaAvisoConfig } from "@/lib/aviso-helpers";
+import { OcorrenciaTimelineJanela } from "@/components/common/OcorrenciaTimelineJanela";
 
 export function SindicaOcorrenciasTab(props: any) {
-  const { ocorrencias, ocorrenciaSearch, setOcorrenciaSearch, ocorrenciaStatusFilter, setOcorrenciaStatusFilter, ocorrenciaRespFilter, setOcorrenciaRespFilter, ocorrenciasStats, filteredOcorrencias, abrirOcorrenciaDireta, showToast } = props;
+  const {
+    appUser,
+    ocorrencias = [],
+    ocorrenciaSearch = '',
+    setOcorrenciaSearch,
+    ocorrenciaStatusFilter = 'all',
+    setOcorrenciaStatusFilter,
+    ocorrenciaRespFilter = 'all',
+    setOcorrenciaRespFilter,
+    ocorrenciasStats = { pendentes: 0, emAtendimento: 0, aguardandoValidacao: 0, resolvidas: 0 },
+    filteredOcorrenciasList = [],
+    abrirOcorrenciaDireta,
+    selectedOcorrencia,
+    setSelectedOcorrencia,
+    handleDespacharOcorrencia,
+    loadAllData,
+    showToast,
+  } = props;
   return (
 <TabsContent value="ocorrencias" className="mt-4 space-y-4">
           {selectedOcorrencia ? (

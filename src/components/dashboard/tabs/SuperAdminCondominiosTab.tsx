@@ -7,11 +7,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Search, Plus, MapPin, Users, Activity, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, KeyRound } from "lucide-react";
+import { Building2, Search, Plus, MapPin, Users, Activity, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, KeyRound, UserCog, RefreshCw, X, Mail, Check, Copy } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 export function SuperAdminCondominiosTab(props: any) {
-  const { condos, filteredCondos, searchQuery, setSearchQuery, statusFilter, setStatusFilter, setActiveTab } = props;
+  const {
+    condominios = [],
+    filteredCondos = [],
+    searchTerm = '',
+    setSearchTerm,
+    stats = { total: 0, ativos: 0, pendentes: 0 },
+    loadingList = false,
+    loadCondominios,
+    setActiveTab,
+    setLastCreated,
+    copyToClipboard,
+    copiedField,
+  } = props;
   return (
 <TabsContent value="condominios" className="mt-0 space-y-5">
             {/* 3 Indicadores Macro */}

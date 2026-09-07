@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.5] - 2026-09-07
+
+### Segurança e Correções
+- **Reforço de Segurança:** Foram implementadas travas de segurança robustas nos dados de usuários, garantindo que contas não autorizadas não consigam alterar os níveis de acesso de terceiros.
+- **Sanitização de Dados:** Integração de filtros para evitar injeção de dados indesejados nas comunicações geradas por inteligência artificial, aumentando a confiabilidade da plataforma.
+- **Correção Visual na Central da Síndica:** Ajustado o erro visual onde ícones de interface não carregavam, evitando travamentos na aba de ocorrências.
+
+---
+
 ## [1.1.4] - 2026-09-07
 
 ### Responsividade Mobile e Navegação

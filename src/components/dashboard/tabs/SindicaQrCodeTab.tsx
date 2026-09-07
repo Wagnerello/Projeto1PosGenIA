@@ -8,13 +8,22 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QRCodeSVG } from "qrcode.react";
-import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check } from "lucide-react";
+import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check, Copy } from "lucide-react";
 import { formatarDataHora } from "@/lib/date-utils";
 import { getStatusConfig, getResponsavelConfig } from "@/lib/ocorrencia-helpers";
 import { getCategoriaAvisoConfig } from "@/lib/aviso-helpers";
 
 export function SindicaQrCodeTab(props: any) {
-  const { condo, rotatingQr, setRotateQrModalOpen, qrCodeUrl, showToast } = props;
+  const {
+    condo,
+    rotatingQr,
+    setRotateQrModalOpen,
+    qrCodeUrl,
+    showToast,
+    moradorLink = '',
+    copyToClipboard,
+    copiedField,
+  } = props;
   return (
 <TabsContent value="qrcode" className="mt-4">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

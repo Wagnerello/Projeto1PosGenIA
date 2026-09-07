@@ -3,15 +3,41 @@
 import React from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { Users, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Users, Search, Home, Check, X, UserX, UserCheck, Pencil, Trash2 } from "lucide-react";
 import { MoradorEditorJanela } from "@/components/dashboard/MoradorEditorJanela";
 import { formatarDataHora } from "@/lib/date-utils";
 import { resolveMoradorStatus, getMoradorStatusConfig } from "@/lib/morador-helpers";
 
 export function SindicaMoradoresTab(props: any) {
-  const { editingMorador, unidades, savingMorador, setEditingMorador, handleSaveMorador, moradoresStats, filterMoradorStatus, setFilterMoradorStatus, searchMorador, setSearchMorador, filterMoradorTorre, setFilterMoradorTorre, torres, filteredMoradores, openEditMorador, confirmDeleteMorador, handleUpdateMoradorStatus, isRejectingMorador, rejectingMorador, setRejectingMorador, handleRejectUser, showToast } = props;
+  const {
+    moradores = [],
+    editingMorador,
+    unidades = [],
+    savingMorador,
+    setEditingMorador,
+    handleSaveMorador,
+    moradoresStats = { total: 0, ativos: 0, pendentes: 0, inativos: 0 },
+    filterMoradorStatus,
+    setFilterMoradorStatus,
+    searchMorador,
+    setSearchMorador,
+    filterMoradorTorre,
+    setFilterMoradorTorre,
+    availableTorres = [],
+    torres = [],
+    filteredMoradores = [],
+    openEditMorador,
+    actionLoading,
+    handleQuickStatusChange,
+    setRejectingMorador,
+    setDeletingMorador,
+    showToast,
+  } = props;
   return (
 <TabsContent value="moradores" className="mt-4 space-y-4">
               {editingMorador ? (

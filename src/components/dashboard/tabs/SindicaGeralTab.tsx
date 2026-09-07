@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* eslint-disable @typescript-eslint/no-unused-vars, max-lines-per-function, complexity, @typescript-eslint/no-explicit-any */ // FIXME: D�vida t�cnica (Quarentena)
+/* eslint-disable @typescript-eslint/no-unused-vars, max-lines-per-function, complexity, @typescript-eslint/no-explicit-any */ // FIXME: Dvida tcnica (Quarentena)
 import React from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -8,27 +8,48 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QRCodeSVG } from "qrcode.react";
-import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check } from "lucide-react";
+import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check, Copy, ArrowRight, FileText } from "lucide-react";
 import { formatarDataHora } from "@/lib/date-utils";
 import { getStatusConfig, getResponsavelConfig } from "@/lib/ocorrencia-helpers";
 import { getCategoriaAvisoConfig } from "@/lib/aviso-helpers";
 
 export function SindicaGeralTab(props: any) {
-  const { condo, unidadesStats, moradoresStats, ocorrenciasStats, avisosStats, setActiveTab, showToast } = props;
+  const {
+    appUser,
+    condo,
+    moradorLink,
+    copiedField,
+    copyToClipboard,
+    loadAllData,
+    pendingUsers = [],
+    activeUsers = [],
+    ocorrencias = [],
+    ocorrenciasStats = { pendentes: 0, emAtendimento: 0, aguardandoValidacao: 0, resolvidas: 0 },
+    moradoresStats = { total: 0, ativos: 0, pendentes: 0, inativos: 0 },
+    unidades = [],
+    unidadesOcupadas = 0,
+    chamadosAtencao = [],
+    abrirOcorrenciaDireta,
+    avisos = [],
+    ultimoAviso,
+    openNovoAviso,
+    setActiveTab,
+    showToast,
+  } = props;
   return (
-<TabsContent value="geral" className="space-y-5 mt-0">
-              {/* Barra de Boas-Vindas e Ações Rápidas (Sem redundâncias de botões) */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                    Olá, {appUser?.nome ? appUser.nome.split(' ')[0] : 'Síndica'}
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Resumo do condomínio em tempo real.
-                  </p>
-                </div>
+    <TabsContent value="geral" className="space-y-5 mt-0">
+      {/* Barra de Boas-Vindas e Ações Rápidas */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+            Olá, {appUser?.nome ? appUser.nome.split(' ')[0] : 'Síndica'}
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Resumo do condomínio em tempo real.
+          </p>
+        </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     size="sm"
                     variant="outline"

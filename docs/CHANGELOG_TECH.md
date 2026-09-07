@@ -3,6 +3,11 @@
 Todas as alterações técnicas relevantes deste projeto são documentadas aqui, no momento em que ocorrem — antes e independentemente de qualquer decisão de release.
 
 ## [Unreleased]
+
+## [v1.1.5] - 2026-09-07
+- [feat] security hardening (rules + input sanitizer) and bug fixes (commit: pending) — Refs: 007
+- [chore] chore(lint): suprimir 510 avisos legados via quarentena (commit: dfb8a78) — Refs: nenhuma
+- [chore] chore(lint): suppress 510 legacy warnings via quarantine (commit: 1104b56) — Refs: nenhuma
 - [refactor] refactor(ui): implementar responsividade mobile menus hamburguer e cortar v1.1.4 (commit: b4144cb) — Refs: nenhuma
 
 ## [v1.1.4] - 2026-09-07

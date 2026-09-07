@@ -55,13 +55,18 @@ service cloud.firestore {
       );
       
       // Auto-cadastro ao criar conta ou cadastro direto por Super Admin
-      allow create: if isAuthenticated() && (request.auth.uid == userId || isSuperAdmin());
+      // Moradores comuns só podem criar cadastro inicial com role 'pending'
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (request.auth.uid == userId && request.resource.data.role in ['pending', 'sindica'])
+      );
       
-      // Atualização de perfil, aprovação ou sincronização
+      // Atualização de perfil: o próprio usuário pode atualizar seus dados (nome, telefone), 
+      // MAS NÃO PODE alterar seu próprio 'role' (apenas Super Admin ou Síndica aprovadora podem mudar role)
       allow update: if isAuthenticated() && (
-        request.auth.uid == userId || 
         isSuperAdmin() || 
-        (hasUserData() && getUserData().role == 'sindica' && getUserData().condominioId == resource.data.condominioId)
+        (hasUserData() && getUserData().role == 'sindica' && getUserData().condominioId == resource.data.condominioId) ||
+        (request.auth.uid == userId && request.resource.data.role == resource.data.role)
       );
 
       // Exclusão permitida para Super Admin ou síndica do condomínio

@@ -14,7 +14,14 @@ import { getStatusConfig, getResponsavelConfig } from "@/lib/ocorrencia-helpers"
 import { getCategoriaAvisoConfig } from "@/lib/aviso-helpers";
 
 export function SindicaAprovacoesTab(props: any) {
-  const { pendingUsers, actionLoading, handleApproveUser, setRejectingMorador, showToast } = props;
+  const {
+    pendingUsers = [],
+    actionLoading,
+    handleApprove,
+    setRejectingMorador,
+    loadAllData,
+    showToast,
+  } = props;
   return (
 <TabsContent value="aprovacoes" className="mt-4">
               <Card className="border-0 shadow-sm">

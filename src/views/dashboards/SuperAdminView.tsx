@@ -382,32 +382,40 @@ export default function SuperAdminView() {
 
           {/* ABA 1: CONDOMÍNIOS REGISTRADOS */}
           <SuperAdminCondominiosTab
-  condominios={condos}
-  filteredCondos={filteredCondos}
-  searchTerm={searchTerm}
-  setSearchTerm={setSearchTerm}
-  filterStatus={filterStatus}
-  setFilterStatus={setFilterStatus}
-  setActiveTab={setActiveTab}
-/>
+            condominios={condominios}
+            filteredCondos={filteredCondos}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            stats={stats}
+            loadingList={loadingList}
+            loadCondominios={loadCondominios}
+            setActiveTab={setActiveTab}
+            setLastCreated={setLastCreated}
+            copyToClipboard={copyToClipboard}
+            copiedField={copiedField}
+          />
 
           {/* ABA 2: NOVO CONDOMÍNIO */}
           <SuperAdminNovoTab
-  nome={nome}
-  setNome={setNome}
-  cnpj={cnpj}
-  setCnpj={setCnpj}
-  sindicaNome={sindicaNome}
-  setSindicaNome={setSindicaNome}
-  sindicaEmail={sindicaEmail}
-  setSindicaEmail={setSindicaEmail}
-  sindicaSenha={sindicaSenha}
-  setSindicaSenha={setSindicaSenha}
-  error={error}
-  loading={loading}
-  handleCreateCondominio={handleCreateCondominio}
-  setActiveTab={setActiveTab}
-/>
+            nome={nome}
+            setNome={setNome}
+            cnpj={cnpj}
+            setCnpj={setCnpj}
+            sindicaNome={sindicaNome}
+            setSindicaNome={setSindicaNome}
+            sindicaEmail={sindicaEmail}
+            setSindicaEmail={setSindicaEmail}
+            sindicaSenha={sindicaSenha}
+            setSindicaSenha={setSindicaSenha}
+            error={error}
+            loading={loading}
+            handleCreateCondominio={handleCreateCondominio}
+            setActiveTab={setActiveTab}
+            lastCreated={lastCreated}
+            setLastCreated={setLastCreated}
+            copyToClipboard={copyToClipboard}
+            copiedField={copiedField}
+          />
         </Tabs>
       </main>
     </div>

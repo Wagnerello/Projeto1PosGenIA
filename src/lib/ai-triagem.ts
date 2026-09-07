@@ -114,14 +114,18 @@ export function triagemHeuristica(titulo: string = '', descricao: string = ''): 
  * Envia o chamado para inferência com o Groq (Llama 3),
  * retornando categoria e urgência calibradas.
  */
+import { sanitizePromptInput } from './input-sanitizer';
+
 export async function classificarOcorrenciaComIA(
   titulo: string,
   descricao: string
 ): Promise<TriagemResultado> {
+  const cleanTitulo = sanitizePromptInput(titulo || '', 100).cleanText;
+  const cleanDescricao = sanitizePromptInput(descricao || '', 500).cleanText;
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
   if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '' || apiKey.startsWith('gsk_sua_chave')) {
-    return triagemHeuristica(titulo, descricao);
+    return triagemHeuristica(cleanTitulo, cleanDescricao);
   }
 
   try {
@@ -150,7 +154,7 @@ Regras de Urgência:
           },
           {
             role: 'user',
-            content: `Título: ${titulo}\nDescrição: ${descricao}`,
+            content: `Título: ${cleanTitulo}\nDescrição: ${cleanDescricao}`,
           },
         ],
         response_format: { type: 'json_object' },

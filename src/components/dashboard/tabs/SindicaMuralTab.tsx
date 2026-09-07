@@ -8,13 +8,35 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { QRCodeSVG } from "qrcode.react";
-import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check } from "lucide-react";
+import { Building2, Users, AlertTriangle, Megaphone, Plus, Search, RefreshCw, CheckCircle2, QrCode, UserCheck, UserX, Layers, Check, Pencil, Trash2 } from "lucide-react";
+import { NovaPublicacaoJanela } from "@/components/dashboard/NovaPublicacaoJanela";
 import { formatarDataHora } from "@/lib/date-utils";
 import { getStatusConfig, getResponsavelConfig } from "@/lib/ocorrencia-helpers";
 import { getCategoriaAvisoConfig } from "@/lib/aviso-helpers";
 
 export function SindicaMuralTab(props: any) {
-  const { avisos, searchAviso, setSearchAviso, filterAvisoCategoria, setFilterAvisoCategoria, filterAvisoDestinatario, setFilterAvisoDestinatario, avisosStats, filteredAvisos, openNovoAviso, openEditAviso, setDeletingAviso, showToast } = props;
+  const {
+    avisos = [],
+    searchAviso,
+    setSearchAviso,
+    filterAvisoCategoria,
+    setFilterAvisoCategoria,
+    filterAvisoDestinatario,
+    setFilterAvisoDestinatario,
+    avisosStats = { total: 0, gerais: 0, blocos: 0 },
+    filteredAvisos = [],
+    openNovoAviso,
+    openEditAviso,
+    setDeletingAviso,
+    showToast,
+    isCriandoAviso,
+    setIsCriandoAviso,
+    editingAviso,
+    setEditingAviso,
+    handleSaveAviso,
+    availableTorres = [],
+    appUser,
+  } = props;
   return (
 <TabsContent value="mural" className="mt-4 space-y-4">
               {isCriandoAviso ? (
