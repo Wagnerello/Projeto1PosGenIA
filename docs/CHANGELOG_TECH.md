@@ -4,6 +4,15 @@ Todas as alterações técnicas relevantes deste projeto são documentadas aqui,
 
 ## [Unreleased]
 
+## [v1.1.2] - 2026-09-07
+- [refactor] refatoração completa de UI e UX do painel Super Admin — Refs: RN-001, spec §2, spec §3
+  - Implementa arquitetura em abas operacionais (Condomínios Registrados e Novo Condomínio) eliminando formulário estático que empurrava a listagem
+  - Remove cards decorativos artificiais ("Status Operacional" com animação de pulso) e consolida 3 indicadores reais (Total, Síndicos Ativos, Acessos Pendentes)
+  - Adiciona barra de busca em tempo real com contador dinâmico de resultados e atalho para limpar a consulta
+  - Implementa ações rápidas por linha com cópia em 1 clique do código de convite da síndica, código do mural e link direto de cadastro de moradores
+  - Estrutura novo fluxo de cadastro em duas seções claras (Condomínio e Síndica) e tela de conclusão com credenciais geradas e QR Code SVG
+  - Adiciona feedback tátil por componente toast flutuante para ações de cópia e notificações operacionais
+
 ## [v1.1.1] - 2026-09-07
 - [refactor] refatoração completa de UI/UX da visão da Síndica e todos os seus menus — Refs: RN-001, spec §2, spec §3
   - Redesenha o Header da Síndica com layout SaaS minimalista, pill de status "Administração" e atalho tátil para cópia do código do condomínio

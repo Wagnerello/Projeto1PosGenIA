@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.2] - 2026-09-07
+
+### Melhorias de Usabilidade e Interface
+- **Painel Super Admin organizado por abas:** A tela inicial agora separa a lista de condomínios do formulário de cadastro, permitindo consultar e gerenciar bases sem rolagens excessivas.
+- **Métricas operacionais reais:** Removidos cartões com status puramente decorativos, mantendo contadores diretos de condomínios totais, síndicos ativos e convites pendentes.
+- **Ações rápidas na tabela de condomínios:** Adicionados botões para copiar com um clique o código de convite da síndica, o código de mural de moradores e o link direto de cadastro.
+- **Busca dinâmica de condomínios:** O campo de busca localiza instantaneamente condomínios por nome, CNPJ, síndico ou código de convite, com contador dinâmico e opção de limpar o filtro.
+- **Cadastro com exibição limpa de credenciais:** O fluxo de cadastro agora exibe um painel de conclusão com as credenciais geradas da administração e o QR Code dos moradores pronto para compartilhamento.
+
+---
+
 ## [1.1.1] - 2026-09-07
 
 ### Melhorias de Usabilidade e Interface
