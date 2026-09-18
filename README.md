@@ -143,3 +143,7 @@ O repositório possui suíte de testes unitários, análise estática e travas n
 - **Backend e Autenticação:** [Firebase Authentication](https://firebase.google.com/), [Cloud Firestore](https://firebase.google.com/products/firestore)
 - **Provedores de IA:** [Groq Cloud](https://groq.com/) (Llama 3), [Google Gemini API](https://ai.google.dev/)
 - **Testes e Qualidade:** [Vitest](https://vitest.dev/), [Testing Library](https://testing-library.com/), [ESLint 9](https://eslint.org/), [Oxlint](https://oxc.rs/), [Husky](https://typicode.github.io/husky/), [Commitlint](https://commitlint.js.org/)
+
+## Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
